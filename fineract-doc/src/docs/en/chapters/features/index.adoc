@@ -21,3 +21,4 @@ include::working-capital-amortization-schedule.adoc[leveloffset=+1]
 include::working-capital-discount-fee-txn.adoc[leveloffset=+1]
 include::working-capital-credit-balance-refund.adoc[leveloffset=+1]
 include::working-capital-goodwill-credit.adoc[leveloffset=+1]
+include::savings-interest-posting.adoc[leveloffset=+1
