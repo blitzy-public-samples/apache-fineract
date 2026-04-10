@@ -41,6 +41,7 @@ import org.apache.fineract.accounting.financialactivityaccount.domain.FinancialA
 import org.apache.fineract.accounting.glaccount.domain.GLAccount;
 import org.apache.fineract.accounting.glaccount.domain.GLAccountRepository;
 import org.apache.fineract.accounting.journalentry.data.ChargePaymentDTO;
+import org.apache.fineract.accounting.journalentry.data.ChargeTaxPaymentDTO;
 import org.apache.fineract.accounting.journalentry.data.ClientChargePaymentDTO;
 import org.apache.fineract.accounting.journalentry.data.ClientTransactionDTO;
 import org.apache.fineract.accounting.journalentry.data.LoanDTO;
@@ -71,6 +72,7 @@ import org.apache.fineract.portfolio.account.PortfolioAccountType;
 import org.apache.fineract.portfolio.account.service.AccountTransfersReadPlatformService;
 import org.apache.fineract.portfolio.charge.domain.ChargeRepositoryWrapper;
 import org.apache.fineract.portfolio.loanaccount.data.AccountingBridgeLoanTransactionDTO;
+import org.apache.fineract.portfolio.loanaccount.data.ChargeTaxDetailDTO;
 import org.apache.fineract.portfolio.loanaccount.data.LoanChargeData;
 import org.apache.fineract.portfolio.loanaccount.data.LoanChargePaidByDTO;
 import org.apache.fineract.portfolio.loanaccount.data.LoanTransactionEnumData;
@@ -134,6 +136,7 @@ public class AccountingProcessorHelper {
 
             final List<ChargePaymentDTO> feePaymentDetails = new ArrayList<>();
             final List<ChargePaymentDTO> penaltyPaymentDetails = new ArrayList<>();
+            final List<ChargeTaxPaymentDTO> chargeTaxPayments = new ArrayList<>();
             // extract charge payment details (if exists)
             if (loanTxnDto.getLoanChargesPaid() != null) {
                 List<LoanChargePaidByDTO> loanChargesPaidData = loanTxnDto.getLoanChargesPaid();
@@ -147,6 +150,10 @@ public class AccountingProcessorHelper {
                         penaltyPaymentDetails.add(chargePaymentDTO);
                     } else {
                         feePaymentDetails.add(chargePaymentDTO);
+                    }
+                    for (ChargeTaxDetailDTO taxDetail : loanChargePaid.getTaxDetails()) {
+                        chargeTaxPayments.add(
+                                new ChargeTaxPaymentDTO(loanChargeId, taxDetail.getCreditAccountId(), taxDetail.getAmount(), isPenalty));
                     }
                 }
             }
@@ -167,6 +174,7 @@ public class AccountingProcessorHelper {
                     feePaid, penaltyPaid);
 
             transaction.setLoanToLoanTransfer(loanTxnDto.isLoanToLoanTransfer());
+            transaction.setChargeTaxPayments(chargeTaxPayments);
             newLoanTransactions.add(transaction);
         }
 
@@ -877,6 +885,20 @@ public class AccountingProcessorHelper {
     public void createCreditJournalEntryForLoan(final Office office, final String currencyCode, final Long loanId,
             final String transactionId, final LocalDate transactionDate, final BigDecimal amount, final GLAccount account) {
         createCreditJournalEntryForLoan(office, currencyCode, account, loanId, transactionId, transactionDate, amount);
+    }
+
+    public void createCreditJournalEntryForLoanByGLAccountId(final Office office, final String currencyCode, final Long loanId,
+            final String transactionId, final LocalDate transactionDate, final BigDecimal amount, final Long glAccountId) {
+        final GLAccount account = glAccountRepository.findById(glAccountId)
+                .orElseThrow(() -> new IllegalStateException("GL account not found for tax liability entry: " + glAccountId));
+        createCreditJournalEntryForLoan(office, currencyCode, account, loanId, transactionId, transactionDate, amount);
+    }
+
+    public void createDebitJournalEntryForLoanByGLAccountId(final Office office, final String currencyCode, final Long loanId,
+            final String transactionId, final LocalDate transactionDate, final BigDecimal amount, final Long glAccountId) {
+        final GLAccount account = glAccountRepository.findById(glAccountId)
+                .orElseThrow(() -> new IllegalStateException("GL account not found for tax liability debit entry: " + glAccountId));
+        createDebitJournalEntryForLoan(office, currencyCode, account, loanId, transactionId, transactionDate, amount);
     }
 
     private void createCreditJournalEntryForClientPayments(final Office office, final String currencyCode, final GLAccount account,
