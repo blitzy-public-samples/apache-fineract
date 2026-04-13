@@ -72,8 +72,7 @@ public final class ErrorHandler {
 
         ROLLBACK("40"), // Transaction rollback
         DEADLOCK("60"), // Oracle: deadlock
-        HY00("HY", "Lock wait timeout exceeded"), // MySql deadlock HY00
-        ;
+        HY00("HY", "Lock wait timeout exceeded"), SNAPSHOT_CONFLICT("HY", "Record has changed since last read");
 
         private final String code;
         private final String msg;
