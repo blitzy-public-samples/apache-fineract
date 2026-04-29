@@ -104,6 +104,11 @@ public class AccrualBasedAccountingProcessorForLoan implements AccountingProcess
                 createJournalEntriesForWriteOffs(loanDTO, loanTransactionDTO, office);
             }
 
+            // Handle Transfers
+            else if (transactionType.isInitiateTransfer() || transactionType.isApproveTransfer() || transactionType.isWithdrawTransfer()) {
+                createJournalEntriesForTransfers(loanDTO, loanTransactionDTO, office);
+            }
+
             // Logic for Refunds of Active Loans
             else if (transactionType.isRefundForActiveLoans()) {
                 createJournalEntriesForRefundForActiveLoan(loanDTO, loanTransactionDTO, office);
@@ -156,6 +161,27 @@ public class AccrualBasedAccountingProcessorForLoan implements AccountingProcess
             if (transactionType.isBuyDownFeeAmortizationAdjustment()) {
                 createJournalEntriesForBuyDownFeeAmortizationAdjustment(loanDTO, loanTransactionDTO, office);
             }
+        }
+    }
+
+    private void createJournalEntriesForTransfers(final LoanDTO loanDTO, final LoanTransactionDTO loanTransactionDTO, final Office office) {
+        final Long loanProductId = loanDTO.getLoanProductId();
+        final Long loanId = loanDTO.getLoanId();
+        final String currencyCode = loanDTO.getCurrencyCode();
+
+        final String transactionId = loanTransactionDTO.getTransactionId();
+        final LocalDate transactionDate = loanTransactionDTO.getTransactionDate();
+        final BigDecimal principalAmount = loanTransactionDTO.getPrincipal();
+
+        if (loanTransactionDTO.getTransactionType().isInitiateTransfer()) {
+            this.helper.createJournalEntriesForLoan(office, currencyCode, AccrualAccountsForLoan.TRANSFERS_SUSPENSE.getValue(),
+                    AccrualAccountsForLoan.LOAN_PORTFOLIO.getValue(), loanProductId, null, loanId, transactionId, transactionDate,
+                    principalAmount);
+        } else if (loanTransactionDTO.getTransactionType().isApproveTransfer()
+                || loanTransactionDTO.getTransactionType().isWithdrawTransfer()) {
+            this.helper.createJournalEntriesForLoan(office, currencyCode, AccrualAccountsForLoan.LOAN_PORTFOLIO.getValue(),
+                    AccrualAccountsForLoan.TRANSFERS_SUSPENSE.getValue(), loanProductId, null, loanId, transactionId, transactionDate,
+                    principalAmount);
         }
     }
 
