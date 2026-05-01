@@ -71,8 +71,6 @@ import org.apache.fineract.portfolio.workingcapitalloan.repository.WorkingCapita
 import org.apache.fineract.portfolio.workingcapitalloan.repository.WorkingCapitalLoanTransactionAllocationRepository;
 import org.apache.fineract.portfolio.workingcapitalloan.repository.WorkingCapitalLoanTransactionRepository;
 import org.apache.fineract.portfolio.workingcapitalloan.serialization.WorkingCapitalLoanDataValidator;
-import org.apache.fineract.portfolio.workingcapitalloanproduct.domain.WorkingCapitalLoanProduct;
-import org.apache.fineract.portfolio.workingcapitalloanproduct.domain.WorkingCapitalLoanProductRelatedDetail;
 import org.apache.fineract.useradministration.domain.AppUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,13 +133,12 @@ public class WorkingCapitalLoanWritePlatformServiceImpl implements WorkingCapita
         }
 
         // Discount amount (optional, can only be reduced per requirement)
+        BigDecimal discount = loan.getLoanProductRelatedDetails().getDiscountProposed();
         if (command.parameterExists(WorkingCapitalLoanConstants.discountAmountParamName)) {
-            final BigDecimal discount = this.fromApiJsonHelper.extractBigDecimalNamed(WorkingCapitalLoanConstants.discountAmountParamName,
+            discount = this.fromApiJsonHelper.extractBigDecimalNamed(WorkingCapitalLoanConstants.discountAmountParamName,
                     command.parsedJson(), new HashSet<>());
-            if (discount != null) {
-                loan.getLoanProductRelatedDetails().setDiscount(discount);
-            }
         }
+        loan.getLoanProductRelatedDetails().setDiscountApproved(discount);
 
         // Keep first tranche expected amount aligned with approved principal (submit stores proposed principal only).
         if (!loan.getDisbursementDetails().isEmpty()) {
@@ -188,9 +185,7 @@ public class WorkingCapitalLoanWritePlatformServiceImpl implements WorkingCapita
         // Note: if discount was customized at submission time, it resets to product default,
         // not the submission-time value, because we don't store a pre-approval snapshot.
         // The loan is back in SUBMITTED state and can be modified.
-        final WorkingCapitalLoanProduct product = loan.getLoanProduct();
-        final WorkingCapitalLoanProductRelatedDetail productDetail = product.getRelatedDetail();
-        loan.getLoanProductRelatedDetails().setDiscount(productDetail.getDiscount());
+        loan.getLoanProductRelatedDetails().setDiscountApproved(null);
 
         this.loanRepository.saveAndFlush(loan);
 
@@ -288,13 +283,16 @@ public class WorkingCapitalLoanWritePlatformServiceImpl implements WorkingCapita
             loan.getDisbursementDetails().getFirst().setDisbursedBy(currentUser);
         }
 
+        BigDecimal discount = loan.getLoanProductRelatedDetails().getDiscountApproved();
         if (command.parameterExists(WorkingCapitalLoanConstants.discountAmountParamName)) {
-            final BigDecimal discount = this.fromApiJsonHelper.extractBigDecimalNamed(WorkingCapitalLoanConstants.discountAmountParamName,
+            discount = this.fromApiJsonHelper.extractBigDecimalNamed(WorkingCapitalLoanConstants.discountAmountParamName,
                     command.parsedJson(), new HashSet<>());
             if (discount != null) {
                 loan.getLoanProductRelatedDetails().setDiscount(discount);
                 changes.put(WorkingCapitalLoanConstants.discountAmountParamName, discount);
             }
+        } else {
+            loan.getLoanProductRelatedDetails().setDiscount(discount);
         }
 
         final ExternalId txnExternalId = this.externalIdFactory.createFromCommand(command,
@@ -308,14 +306,6 @@ public class WorkingCapitalLoanWritePlatformServiceImpl implements WorkingCapita
         final WorkingCapitalLoanTransactionAllocation allocation = WorkingCapitalLoanTransactionAllocation
                 .forPrincipalAllocation(disbursementTransaction, transactionAmount);
         this.allocationRepository.saveAndFlush(allocation);
-
-        BigDecimal discount = command.parameterExists(WorkingCapitalLoanConstants.discountAmountParamName)
-                ? this.fromApiJsonHelper.extractBigDecimalNamed(WorkingCapitalLoanConstants.discountAmountParamName, command.parsedJson(),
-                        new HashSet<>())
-                : null;
-        if (discount == null && loan.getLoanProductRelatedDetails().getDiscount() != null) {
-            discount = loan.getLoanProductRelatedDetails().getDiscount();
-        }
 
         Long discountTransactionId = null;
         ExternalId discountTxnExternalId = null;
@@ -382,6 +372,7 @@ public class WorkingCapitalLoanWritePlatformServiceImpl implements WorkingCapita
                 }
             }
         }
+        loan.getLoanProductRelatedDetails().setDiscount(null);
         amortizationScheduleWriteService.regenerateAmortizationScheduleOnUndoDisbursal(loan);
 
         this.loanRepository.saveAndFlush(loan);

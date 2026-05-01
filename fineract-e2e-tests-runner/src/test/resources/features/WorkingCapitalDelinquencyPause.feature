@@ -11,8 +11,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -38,8 +38,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -70,8 +70,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -102,8 +102,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -134,8 +134,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -167,8 +167,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -210,8 +210,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -273,8 +273,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -351,8 +351,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -379,8 +379,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -421,8 +421,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount
@@ -458,8 +458,8 @@ Feature: Working Capital Delinquency Pause
     And Admin successfully approves the working capital loan on "01 January 2026" with "9000" amount and expected disbursement date on "01 January 2026"
     Then Working capital loan approval was successful
     And Working capital loan account has the correct data:
-      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discount |
-      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0      |
+      | product.name | submittedOnDate | expectedDisbursementDate | status   | principal | approvedPrincipal | totalPayment | periodPaymentRate | discountApproved |
+      | WCLP         | 2026-01-01      | 2026-01-01               | Approved | 9000.0    | 9000.0            | 100000.0     | 18.0              | 0.0              |
     When Admin successfully disburse the Working Capital loan on "01 January 2026" with "9000" EUR transaction amount
     Then Working Capital loan status will be "ACTIVE"
     And Verify Working Capital loan disbursement was successful on "01 January 2026" with "9000" EUR transaction amount

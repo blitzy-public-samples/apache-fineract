@@ -1090,6 +1090,10 @@ public final class ErrorMessageHelper {
         return "Failed data validation due to: amount.cannot.exceed.created.discount.";
     }
 
+    public static String discountAmountExceedApprovedFailure() {
+        return "Failed data validation due to: amount.cannot.exceed.approved.discount.";
+    }
+
     public static String discountAlreadySetBeforeDisburseFailure() {
         return "Discount was already set before disbursement and cannot be added again";
     }

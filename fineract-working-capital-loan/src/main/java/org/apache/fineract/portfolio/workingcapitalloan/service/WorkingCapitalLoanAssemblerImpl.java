@@ -177,7 +177,7 @@ public class WorkingCapitalLoanAssemblerImpl implements WorkingCapitalLoanAssemb
                         : productDetail.getRepaymentFrequencyType());
         detail.setAmortizationType(productDetail.getAmortizationType());
         detail.setNpvDayCount(productDetail.getNpvDayCount());
-        detail.setDiscount(fromApiJsonHelper.parameterExists(WorkingCapitalLoanProductConstants.discountParamName, element)
+        detail.setDiscountProposed(fromApiJsonHelper.parameterExists(WorkingCapitalLoanProductConstants.discountParamName, element)
                 ? fromApiJsonHelper.extractBigDecimalNamed(WorkingCapitalLoanProductConstants.discountParamName, element, new HashSet<>())
                 : productDetail.getDiscount());
         final Long breachId = fromApiJsonHelper.parameterExists(WorkingCapitalLoanProductConstants.breachIdParamName, element)
@@ -355,7 +355,7 @@ public class WorkingCapitalLoanAssemblerImpl implements WorkingCapitalLoanAssemb
                         element, new HashSet<>());
                 if (command.isChangeInBigDecimalParameterNamed(WorkingCapitalLoanProductConstants.discountParamName,
                         detail.getDiscount())) {
-                    detail.setDiscount(discount);
+                    detail.setDiscountProposed(discount);
                     changes.put(WorkingCapitalLoanProductConstants.discountParamName, discount);
                 }
             }

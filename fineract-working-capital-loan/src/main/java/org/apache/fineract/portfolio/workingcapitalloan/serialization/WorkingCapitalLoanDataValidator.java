@@ -194,7 +194,7 @@ public class WorkingCapitalLoanDataValidator {
                     .failWithCode("cannot.be.before.approval.date");
         }
 
-        // discountAmount must be >= 0 and <= current (creation-time) discount
+        // discountAmount must be >= 0 and <= proposed discount (creation-time) discount
         if (this.fromApiJsonHelper.parameterHasValue(WorkingCapitalLoanConstants.discountAmountParamName, element)) {
             if (isDiscountOverrideAllowed(loan)) {
                 baseDataValidator.reset().parameter(WorkingCapitalLoanConstants.discountAmountParamName)
@@ -206,7 +206,7 @@ public class WorkingCapitalLoanDataValidator {
                     .zeroOrPositiveAmount();
 
             final BigDecimal currentDiscount = loan.getLoanProductRelatedDetails() != null
-                    ? loan.getLoanProductRelatedDetails().getDiscount()
+                    ? loan.getLoanProductRelatedDetails().getDiscountProposed()
                     : null;
             if (discountAmount != null && currentDiscount != null && discountAmount.compareTo(currentDiscount) > 0) {
                 baseDataValidator.reset().parameter(WorkingCapitalLoanConstants.discountAmountParamName)
@@ -334,12 +334,13 @@ public class WorkingCapitalLoanDataValidator {
             baseDataValidator.reset().parameter(WorkingCapitalLoanConstants.discountAmountParamName).value(discountAmount).ignoreIfNull()
                     .zeroOrPositiveAmount();
 
+            // discountAmount must be >= 0 and <= approved discount (approval-time) discount
             final BigDecimal currentDiscount = loan.getLoanProductRelatedDetails() != null
-                    ? loan.getLoanProductRelatedDetails().getDiscount()
+                    ? loan.getLoanProductRelatedDetails().getDiscountApproved()
                     : null;
             if (discountAmount != null && currentDiscount != null && discountAmount.compareTo(currentDiscount) > 0) {
                 baseDataValidator.reset().parameter(WorkingCapitalLoanConstants.discountAmountParamName)
-                        .failWithCode("amount.cannot.exceed.created.discount");
+                        .failWithCode("amount.cannot.exceed.approved.discount");
             }
         }
 
