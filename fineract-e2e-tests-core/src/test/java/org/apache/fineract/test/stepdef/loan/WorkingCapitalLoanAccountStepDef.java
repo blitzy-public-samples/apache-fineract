@@ -33,6 +33,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -59,6 +60,7 @@ import org.apache.fineract.client.models.GetJournalEntriesTransactionIdResponse;
 import org.apache.fineract.client.models.GetWorkingCapitalLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetWorkingCapitalLoanTransactionIdResponse;
 import org.apache.fineract.client.models.GetWorkingCapitalLoansLoanIdResponse;
+import org.apache.fineract.client.models.JournalEntryTransactionItem;
 import org.apache.fineract.client.models.LoanTransactionEnumData;
 import org.apache.fineract.client.models.PostAllowAttributeOverrides;
 import org.apache.fineract.client.models.PostClientsResponse;
@@ -92,6 +94,7 @@ import org.apache.fineract.test.helper.Utils;
 import org.apache.fineract.test.helper.WorkingCapitalScheduleMatcher;
 import org.apache.fineract.test.messaging.event.EventCheckHelper;
 import org.apache.fineract.test.stepdef.AbstractStepDef;
+import org.apache.fineract.test.stepdef.common.JournalEntriesStepDef;
 import org.apache.fineract.test.support.TestContextKey;
 import org.junit.jupiter.api.Assertions;
 
@@ -101,6 +104,7 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
 
     private static final String DATE_FORMAT = "dd MMMM yyyy";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_FORMAT);
     private static final Long NON_EXISTENT_LOAN_ID = 999_999_999L;
     private static final String WC_DISBURSE_CLASSIFICATION_ID = "wcDisburseClassificationId";
     private static final String WC_DISBURSE_CLASSIFICATION_CODE_NAME = "working_capital_loan_disbursement_classification";
@@ -117,6 +121,7 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
     private final EventCheckHelper eventCheckHelper;
     private final PaymentTypeResolver paymentTypeResolver;
     private final BusinessDateHelper businessDateHelper;
+    private final JournalEntriesStepDef journalEntriesStepDef;
 
     @When("Admin creates a working capital loan with the following data:")
     public void createWorkingCapitalLoan(final DataTable table) {
@@ -2567,5 +2572,79 @@ public class WorkingCapitalLoanAccountStepDef extends AbstractStepDef {
                 }
             }
         }
+    }
+
+    @Then("Working Capital Loan Transactions tab has a {string} transaction with date {string} which has the following Journal entries:")
+    public void verifyWorkingCapitalLoanTransactionJournalEntries(String transactionType, String transactionDate, DataTable table)
+            throws IOException {
+        Long loanId = getCreatedLoanId();
+        List<GetWorkingCapitalLoanTransactionIdResponse> transactionsMatch = findMatchingTransactions(loanId, transactionType,
+                transactionDate, false);
+        verifyJournalEntries(transactionsMatch, loanId, table);
+    }
+
+    @Then("Working Capital Loan Transactions tab has {int} {string} transactions with date {string} which have the following Journal entries:")
+    public void verifyMultipleWorkingCapitalLoanTransactionsJournalEntries(int expectedCount, String transactionType,
+            String transactionDate, DataTable table) throws IOException {
+        Long loanId = getCreatedLoanId();
+        List<GetWorkingCapitalLoanTransactionIdResponse> transactionsMatch = findMatchingTransactions(loanId, transactionType,
+                transactionDate, false);
+
+        assertThat(transactionsMatch.size()).as("The number of transactions does not match the expected count! Expected: " + expectedCount
+                + ", Actual: " + transactionsMatch.size()).isEqualTo(expectedCount);
+
+        verifyJournalEntries(transactionsMatch, loanId, table);
+    }
+
+    @Then("Working Capital Loan Transactions tab has a reversed {string} transaction with date {string} which has the following Journal entries:")
+    public void verifyReversedWorkingCapitalLoanTransactionJournalEntries(String transactionType, String transactionDate, DataTable table)
+            throws IOException {
+        Long loanId = getCreatedLoanId();
+        List<GetWorkingCapitalLoanTransactionIdResponse> transactionsMatch = findMatchingTransactions(loanId, transactionType,
+                transactionDate, true);
+        verifyJournalEntries(transactionsMatch, loanId, table);
+    }
+
+    private List<GetWorkingCapitalLoanTransactionIdResponse> findMatchingTransactions(Long loanId, String transactionType,
+            String transactionDate, boolean reversed) {
+        GetWorkingCapitalLoansLoanIdResponse loanDetailsResponse = ok(
+                () -> fineractClient.workingCapitalLoans().retrieveWorkingCapitalLoanById(loanId));
+
+        return loanDetailsResponse.getTransactions().stream()
+                .filter(t -> t.getType() != null && transactionDate.equals(DATE_FORMATTER.format(t.getTransactionDate()))
+                        && transactionType.equalsIgnoreCase(t.getType().getValue())
+                        && (reversed ? Boolean.TRUE.equals(t.getReversed()) : !Boolean.TRUE.equals(t.getReversed())))
+                .collect(Collectors.toList());
+    }
+
+    private void verifyJournalEntries(List<GetWorkingCapitalLoanTransactionIdResponse> transactions, Long loanId, DataTable table) {
+        List<List<JournalEntryTransactionItem>> journalLinesActualList = getWorkingCapitalJournalLinesActualList(transactions);
+        journalEntriesStepDef.checkJournalEntryData(journalLinesActualList, loanId, table);
+    }
+
+    private List<List<JournalEntryTransactionItem>> getWorkingCapitalJournalLinesActualList(
+            List<GetWorkingCapitalLoanTransactionIdResponse> transactions) {
+        log.debug("Processing {} working capital loan transactions for journal entries", transactions.size());
+        return transactions.stream().map(this::retrieveJournalEntriesForTransaction).collect(Collectors.toList());
+    }
+
+    private List<JournalEntryTransactionItem> retrieveJournalEntriesForTransaction(GetWorkingCapitalLoanTransactionIdResponse transaction) {
+        String transactionId = "WC" + transaction.getId();
+        log.debug("Retrieving journal entries for working capital transaction: {}", transactionId);
+
+        JournalEntriesApi.RetrieveAllJournalEntriesQueryParams params = new JournalEntriesApi.RetrieveAllJournalEntriesQueryParams()
+                .transactionId(transactionId).runningBalance(true);
+
+        GetJournalEntriesTransactionIdResponse journalEntryDataResponse = ok(
+                () -> fineractClient.journalEntries().retrieveAllJournalEntries(params));
+
+        return journalEntryDataResponse != null && journalEntryDataResponse.getPageItems() != null ? journalEntryDataResponse.getPageItems()
+                : List.of();
+    }
+
+    @When("Customer undo {string}th {string} transaction made on {string} on Working Capital loan")
+    public void undoWorkingCapitalLoanTransaction(String nthItemStr, String transactionType, String transactionDate) throws IOException {
+        // TODO: Implement undo transaction for working capital loans when backend support is available (PS-3194)
+        throw new UnsupportedOperationException("Undo transaction for working capital loans is not yet implemented");
     }
 }

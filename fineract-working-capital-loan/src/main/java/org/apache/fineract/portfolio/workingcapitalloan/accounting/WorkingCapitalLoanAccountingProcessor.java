@@ -16,21 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.test.data;
+package org.apache.fineract.portfolio.workingcapitalloan.accounting;
 
-public enum AccountTypeAssetOptions {
+import org.apache.fineract.portfolio.workingcapitalloan.domain.WorkingCapitalLoan;
+import org.apache.fineract.portfolio.workingcapitalloan.domain.WorkingCapitalLoanTransaction;
+import org.apache.fineract.portfolio.workingcapitalloan.domain.WorkingCapitalLoanTransactionAllocation;
 
-    LOANS_RECEIVABLE(1), //
-    INTEREST_FEE_RECEIVABLE(2), //
-    OTHER_RECEIVABLES(3), //
-    FUND_RECEIVABLES(18), //
-    TRANSFER_IN_SUSPENSE_ACCOUNT(14), //
-    GOODWILL_TRANSFER_ACCOUNT(19); //
+public interface WorkingCapitalLoanAccountingProcessor {
 
-    public final Integer value;
+    void postJournalEntriesForRepayment(WorkingCapitalLoan loan, WorkingCapitalLoanTransaction txn,
+            WorkingCapitalLoanTransactionAllocation allocation, boolean isChargedOff);
 
-    AccountTypeAssetOptions(Integer value) {
-        this.value = value;
-    }
-
+    void postReversalJournalEntries(WorkingCapitalLoan loan, WorkingCapitalLoanTransaction txn);
 }

@@ -1114,7 +1114,9 @@ public class WorkingCapitalStepDef extends AbstractStepDef {
                 .incomeFromPenaltyAccountId(source.getIncomeFromPenaltyAccountId())//
                 .incomeFromRecoveryAccountId(source.getIncomeFromRecoveryAccountId())//
                 .writeOffAccountId(source.getWriteOffAccountId())//
-                .overpaymentLiabilityAccountId(source.getOverpaymentLiabilityAccountId());
+                .overpaymentLiabilityAccountId(source.getOverpaymentLiabilityAccountId())//
+                .receivableFeeAccountId(source.getReceivableFeeAccountId())//
+                .receivablePenaltyAccountId(source.getReceivablePenaltyAccountId());
     }
 
     public void checkWorkingCapitalLoanProductCreate() {
@@ -2012,6 +2014,8 @@ public class WorkingCapitalStepDef extends AbstractStepDef {
                 .incomeFromRecoveryAccountId(accountTypeResolver.resolve(DefaultAccountType.RECOVERIES))
                 .writeOffAccountId(accountTypeResolver.resolve(DefaultAccountType.WRITTEN_OFF))
                 .overpaymentLiabilityAccountId(accountTypeResolver.resolve(DefaultAccountType.OVERPAYMENT_ACCOUNT))
+                .receivableFeeAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))
+                .receivablePenaltyAccountId(accountTypeResolver.resolve(DefaultAccountType.INTEREST_FEE_RECEIVABLE))
                 .paymentChannelToFundSourceMappings(paymentChannelMappings).chargeOffReasonToExpenseAccountMappings(chargeOffMappings)
                 .writeOffReasonsToExpenseMappings(writeOffMappings).feeToIncomeAccountMappings(List.of())
                 .penaltyToIncomeAccountMappings(List.of());
