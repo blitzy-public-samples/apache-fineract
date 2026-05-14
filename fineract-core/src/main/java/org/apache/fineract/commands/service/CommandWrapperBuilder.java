@@ -4125,4 +4125,12 @@ public class CommandWrapperBuilder {
         this.href = "/savingsaccounts/" + accountId;
         return this;
     }
+
+    public CommandWrapperBuilder undoAccountTransfer(final Long transferId) {
+        this.actionName = ACTION_UNDO;
+        this.entityName = ENTITY_ACCOUNTTRANSFER;
+        this.entityId = transferId;
+        this.href = "/accounttransfers";
+        return this;
+    }
 }
