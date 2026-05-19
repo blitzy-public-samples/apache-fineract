@@ -23,13 +23,9 @@ import static org.apache.fineract.client.feign.util.FeignCalls.ok;
 import io.cucumber.java.en.When;
 import org.apache.fineract.client.feign.FineractFeignClient;
 import org.apache.fineract.client.models.ChargeRequest;
-import org.apache.fineract.client.models.PostChargesResponse;
 import org.apache.fineract.test.data.ChargeCalculationType;
-import org.apache.fineract.test.data.ChargeProductAppliesTo;
 import org.apache.fineract.test.data.ChargeProductResolver;
 import org.apache.fineract.test.data.ChargeProductType;
-import org.apache.fineract.test.data.ChargeTimeType;
-import org.apache.fineract.test.helper.Utils;
 import org.apache.fineract.test.stepdef.AbstractStepDef;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,31 +61,4 @@ public class ChargeStepDef extends AbstractStepDef {
         ok(() -> fineractClient.charges().updateCharge(chargeId, disbursementChargeUpdateRequest));
     }
 
-    @When("Admin creates working capital loan charge")
-    public void createWorkingCapitalLoanCharge() {
-        ChargeRequest request = new ChargeRequest().chargeAppliesTo(ChargeProductAppliesTo.WORKING_CAPITAL_LOAN.value) //
-                .chargeTimeType(ChargeTimeType.SPECIFIED_DUE_DATE.value) //
-                .chargeCalculationType(ChargeCalculationType.FLAT.value) //
-                .name(Utils.randomStringGenerator("WCL_CHARGE_", 10)) //
-                .amount(20.0D).active(true).currencyCode("EUR").locale("en").penalty(false);
-        PostChargesResponse response = ok(() -> fineractClient.charges().createCharge(request));
-        testContext().set("WORKING_CAPITAL_LOAN_CHARGE_ID", response.getResourceId());
-    }
-
-    @When("Admin updates working capital loan charge")
-    public void updateWorkingCapitalLoanCharge() {
-        Long id = testContext().get("WORKING_CAPITAL_LOAN_CHARGE_ID");
-        ChargeRequest request = new ChargeRequest().chargeAppliesTo(ChargeProductAppliesTo.WORKING_CAPITAL_LOAN.value) //
-                .chargeTimeType(ChargeTimeType.SPECIFIED_DUE_DATE.value) //
-                .chargeCalculationType(ChargeCalculationType.FLAT.value) //
-                .name(Utils.randomStringGenerator("WCL_CHARGE_", 10)) //
-                .active(true).currencyCode("EUR").locale("en").amount(30.0D).penalty(true);
-        ok(() -> fineractClient.charges().updateCharge(id, request));
-    }
-
-    @When("Admin deletes working capital loan charge")
-    public void deleteWorkingCapitalLoanCharge() {
-        Long id = testContext().get("WORKING_CAPITAL_LOAN_CHARGE_ID");
-        ok(() -> fineractClient.charges().deleteCharge(id));
-    }
 }
