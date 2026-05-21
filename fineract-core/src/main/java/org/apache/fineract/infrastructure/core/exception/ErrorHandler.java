@@ -72,18 +72,14 @@ public final class ErrorHandler {
 
         ROLLBACK("40"), // Transaction rollback
         DEADLOCK("60"), // Oracle: deadlock
-        HY00("HY", "Lock wait timeout exceeded"), SNAPSHOT_CONFLICT("HY", "Record has changed since last read");
+        HY00("HY", "Lock wait timeout exceeded", "Record has changed since last read");
 
         private final String code;
-        private final String msg;
+        private final String[] msgs;
 
-        PessimisticLockingFailureCode(String code, String msg) {
+        PessimisticLockingFailureCode(String code, String... msgs) {
             this.code = code;
-            this.msg = msg;
-        }
-
-        PessimisticLockingFailureCode(String code) {
-            this(code, null);
+            this.msgs = msgs;
         }
 
         private static Throwable match(Throwable t) {
@@ -91,8 +87,12 @@ public final class ErrorHandler {
             return rootCause instanceof SQLException sqle && Arrays.stream(values()).anyMatch(e -> e.matches(sqle)) ? rootCause : null;
         }
 
-        private boolean matches(SQLException ex) {
-            return code.equals(getSqlClassCode(ex)) && (msg == null || ex.getMessage().contains(msg));
+        private boolean matches(SQLException e) {
+            String sqlState = e.getSQLState();
+            String message = e.getMessage();
+
+            return sqlState != null && sqlState.startsWith(code)
+                    && (msgs.length == 0 || (message != null && Arrays.stream(msgs).anyMatch(message::contains)));
         }
 
         @Nullable
