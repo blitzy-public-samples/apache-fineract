@@ -75,11 +75,11 @@ public final class ErrorHandler {
         HY00("HY", "Lock wait timeout exceeded", "Record has changed since last read");
 
         private final String code;
-        private final String[] msgs;
+        private final List<String> messages;
 
-        PessimisticLockingFailureCode(String code, String... msgs) {
+        PessimisticLockingFailureCode(String code, String... messages) {
             this.code = code;
-            this.msgs = msgs;
+            this.messages = List.of(messages);
         }
 
         private static Throwable match(Throwable t) {
@@ -92,7 +92,7 @@ public final class ErrorHandler {
             String message = e.getMessage();
 
             return sqlState != null && sqlState.startsWith(code)
-                    && (msgs.length == 0 || (message != null && Arrays.stream(msgs).anyMatch(message::contains)));
+                    && (messages.isEmpty() || (message != null && messages.stream().anyMatch(message::contains)));
         }
 
         @Nullable
