@@ -51,7 +51,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.dao.PessimisticLockingFailureException;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -96,17 +95,6 @@ public final class ErrorHandler {
                     && (messages.isEmpty() || (message != null && messages.stream().anyMatch(message::contains)));
         }
 
-        @Nullable
-        private static String getSqlClassCode(SQLException ex) {
-            String sqlState = ex.getSQLState();
-            if (sqlState == null) {
-                SQLException nestedEx = ex.getNextException();
-                if (nestedEx != null) {
-                    sqlState = nestedEx.getSQLState();
-                }
-            }
-            return sqlState != null && sqlState.length() > 2 ? sqlState.substring(0, 2) : sqlState;
-        }
     }
 
     @Autowired
