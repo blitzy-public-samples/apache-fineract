@@ -1,0 +1,19 @@
+test_id,scenario,principal,annual_rate_pct,day_count_convention,start_date,end_date,day_count_days,day_count_fraction,expected_accrued_interest,notes
+S1-Actual_360,Base one-month period,100000,5.0,Actual/360,2025-01-01,2025-02-01,31,0.08611111,430.56,Standard 31-day month; the three conventions diverge.
+S1-Actual_365,Base one-month period,100000,5.0,Actual/365,2025-01-01,2025-02-01,31,0.08493150,424.66,Standard 31-day month; the three conventions diverge.
+S1-30_360,Base one-month period,100000,5.0,30/360,2025-01-01,2025-02-01,30,0.08333333,416.67,Standard 31-day month; the three conventions diverge.
+S2-Actual_360,Full non-leap year,100000,5.0,Actual/360,2025-01-01,2026-01-01,365,1.01388888,5069.44,365 actual days; Actual/365 and 30/360 both equal one full year.
+S2-Actual_365,Full non-leap year,100000,5.0,Actual/365,2025-01-01,2026-01-01,365,1,5000.00,365 actual days; Actual/365 and 30/360 both equal one full year.
+S2-30_360,Full non-leap year,100000,5.0,30/360,2025-01-01,2026-01-01,360,1,5000.00,365 actual days; Actual/365 and 30/360 both equal one full year.
+S3-Actual_360,Leap-year February,250000,4.25,Actual/360,2024-02-01,2024-03-01,29,0.08055555,855.90,"Leap Feb: actual conventions use 29 days, 30/360 uses 30."
+S3-Actual_365,Leap-year February,250000,4.25,Actual/365,2024-02-01,2024-03-01,29,0.07945205,844.18,"Leap Feb: actual conventions use 29 days, 30/360 uses 30."
+S3-30_360,Leap-year February,250000,4.25,30/360,2024-02-01,2024-03-01,30,0.08333333,885.42,"Leap Feb: actual conventions use 29 days, 30/360 uses 30."
+S4-Actual_360,Quarter crossing a 31st month-end,100000,5.0,Actual/360,2025-01-01,2025-03-31,89,0.24722222,1236.11,30/360 US: end day 31 is NOT adjusted (start day is not 30/31).
+S4-Actual_365,Quarter crossing a 31st month-end,100000,5.0,Actual/365,2025-01-01,2025-03-31,89,0.24383561,1219.18,30/360 US: end day 31 is NOT adjusted (start day is not 30/31).
+S4-30_360,Quarter crossing a 31st month-end,100000,5.0,30/360,2025-01-01,2025-03-31,90,0.25,1250.00,30/360 US: end day 31 is NOT adjusted (start day is not 30/31).
+S5-Actual_360,Single-day period,1000000,3.65,Actual/360,2025-06-01,2025-06-02,1,0.00277777,101.39,1 day; Actual/365 at 3.65% yields exactly 100.00 (sanity check).
+S5-Actual_365,Single-day period,1000000,3.65,Actual/365,2025-06-01,2025-06-02,1,0.00273972,100.00,1 day; Actual/365 at 3.65% yields exactly 100.00 (sanity check).
+S5-30_360,Single-day period,1000000,3.65,30/360,2025-06-01,2025-06-02,1,0.00277777,101.39,1 day; Actual/365 at 3.65% yields exactly 100.00 (sanity check).
+S6-Actual_360,Zero-day boundary,100000,5.0,Actual/360,2025-01-01,2025-01-01,0,0,0.00,start == end; accrual must be 0.00 for every convention.
+S6-Actual_365,Zero-day boundary,100000,5.0,Actual/365,2025-01-01,2025-01-01,0,0,0.00,start == end; accrual must be 0.00 for every convention.
+S6-30_360,Zero-day boundary,100000,5.0,30/360,2025-01-01,2025-01-01,0,0,0.00,start == end; accrual must be 0.00 for every convention.
