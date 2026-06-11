@@ -415,10 +415,8 @@ public final class LoanProductDataValidator {
 
         // [Day-Count Convention feature]
         if (this.fromApiJsonHelper.parameterExists(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element)) {
-            final Integer accrualDayCountConvention = this.fromApiJsonHelper
-                    .extractIntegerNamed(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element, Locale.getDefault());
-            baseDataValidator.reset().parameter(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME)
-                    .value(accrualDayCountConvention).notNull().isOneOfTheseValues(1, 2, 3);
+            // [Day-Count Convention feature]
+            validateAccrualDayCountConvention(element, baseDataValidator);
         }
 
         final Integer daysInMonthType = this.fromApiJsonHelper.extractIntegerNamed(LoanProductConstants.DAYS_IN_MONTH_TYPE_PARAMETER_NAME,
@@ -936,6 +934,23 @@ public final class LoanProductDataValidator {
                         "supported.only.for.enable.down.payment.true",
                         "Auto repayment for down-payment is supported only if enable down-payment is true");
             }
+        }
+    }
+
+    // [Day-Count Convention feature]
+    private void validateAccrualDayCountConvention(final JsonElement element, final DataValidatorBuilder baseDataValidator) {
+        final String parameterName = LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME;
+        final JsonElement rawElement = element.getAsJsonObject().get(parameterName);
+        final boolean isPrimitive = rawElement != null && rawElement.isJsonPrimitive();
+        final String rawToken = isPrimitive ? rawElement.getAsString() : null;
+        final boolean isStrictPositiveIntegerToken = rawToken != null && rawToken.length() <= 9 && rawToken.matches("[1-9][0-9]*");
+        if (isStrictPositiveIntegerToken) {
+            final Integer accrualDayCountConvention = Integer.valueOf(rawToken);
+            baseDataValidator.reset().parameter(parameterName).value(accrualDayCountConvention).notNull().isOneOfTheseValues(1, 2, 3);
+        } else {
+            final Object reportedValue = rawToken != null ? rawToken
+                    : (rawElement == null || rawElement.isJsonNull() ? null : rawElement.toString());
+            baseDataValidator.reset().parameter(parameterName).value(reportedValue).inValidValue("integer.format", reportedValue);
         }
     }
 
@@ -1530,10 +1545,8 @@ public final class LoanProductDataValidator {
 
         // [Day-Count Convention feature]
         if (this.fromApiJsonHelper.parameterExists(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element)) {
-            final Integer accrualDayCountConvention = this.fromApiJsonHelper
-                    .extractIntegerNamed(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element, Locale.getDefault());
-            baseDataValidator.reset().parameter(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME)
-                    .value(accrualDayCountConvention).notNull().isOneOfTheseValues(1, 2, 3);
+            // [Day-Count Convention feature]
+            validateAccrualDayCountConvention(element, baseDataValidator);
         }
 
         if (this.fromApiJsonHelper.parameterExists(LoanProductConstants.DAYS_IN_MONTH_TYPE_PARAMETER_NAME, element)) {

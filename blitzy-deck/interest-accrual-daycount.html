@@ -201,6 +201,57 @@
     .muted{ color:#6E6890; }
     .small{ font-size:24px; }
     hr.rule{ border:none; border-top:2px solid var(--blitzy-border); margin:18px 0; }
+
+    /* ---- [QA Issue 5] Accessible slide-number + navigation controls -------- */
+    /* High-contrast slide number moved to the bottom-left so it never crowds the
+       bottom-right arrow cluster; sized to a >=44x44 touch/click target.        */
+    .reveal .slide-number{
+      background-color:var(--blitzy-indigo-deep); /* #1A105F: ~16:1 contrast with #fff */
+      color:#FFFFFF; font-family:var(--blitzy-font-sans);
+      font-size:18px; font-weight:700;
+      left:16px; right:auto; bottom:16px;
+      padding:0; border-radius:10px; overflow:hidden;
+    }
+    .reveal .slide-number,
+    .reveal .slide-number a{
+      min-width:44px; height:44px; line-height:44px;
+      display:inline-flex; align-items:center; justify-content:center;
+      color:#FFFFFF !important; text-decoration:none; padding:0 12px;
+    }
+    /* Navigation arrows: >=44x44 click targets with a solid high-contrast chip so
+       the arrow is legible over both light content and dark title slides.        */
+    .reveal .controls{ right:18px; bottom:18px; color:#FFFFFF; }
+    .reveal .controls button{
+      width:48px; height:48px;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(26,16,95,0.90); border-radius:50%;
+      box-shadow:0 2px 8px rgba(26,16,95,0.35);
+    }
+    .reveal .controls button.navigate-left{ left:auto; right:62px; }
+    .reveal .controls button.navigate-right{ right:6px; }
+    .reveal .controls .controls-arrow{ color:#FFFFFF; }
+    .reveal .controls .controls-arrow::before,
+    .reveal .controls .controls-arrow::after{ background-color:#FFFFFF; }
+    .reveal .progress{ color:var(--blitzy-primary); height:6px; }
+    /* Center the footer so it clears the bottom-left slide-number chip and the
+       bottom-right nav controls (no overlap at any breakpoint).               */
+    .reveal .slides .slide-footer{ left:50%; right:auto; transform:translateX(-50%); text-align:center; white-space:nowrap; }
+
+    /* ---- [QA Issue 6] Small-viewport readability + branded backdrop --------- */
+    /* The 1920x1080 canvas is mandated (Rule 4); on narrow screens we cannot
+       resize the canvas, so we (a) brand the letterbox area so the surrounding
+       whitespace reads as intentional, and (b) enlarge the fixed chrome (arrows,
+       slide number, progress) which lives outside the scaled canvas.            */
+    @media screen and (max-width:768px){
+      html, .reveal-viewport{ background:var(--blitzy-gradient); }
+      .reveal .controls{ right:12px; bottom:12px; }
+      .reveal .controls button{ width:52px; height:52px; }
+      .reveal .controls button.navigate-left{ right:66px; }
+      .reveal .slide-number{ left:12px; bottom:12px; font-size:16px; }
+      .reveal .slide-number,
+      .reveal .slide-number a{ min-width:52px; height:48px; line-height:48px; }
+      .reveal .progress{ height:8px; }
+    }
   </style>
 </head>
 <body>

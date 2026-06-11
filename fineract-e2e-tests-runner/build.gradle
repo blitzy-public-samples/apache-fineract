@@ -118,6 +118,17 @@ allure {
     version = '2.17.3'
 }
 
+// [Day-Count Convention feature] Make Allure report generation idempotent across repeated
+// `./gradlew cucumber` runs. io.qameta.allure 3.2.0's AllureReport task fails when its target
+// report directory already exists (the underlying `allure generate` needs `--clean`). Enabling
+// clean removes only the generated HTML report directory before regenerating; it does NOT delete
+// allure-results, alter or skip any scenario, or touch the committed acceptance CSV, so acceptance
+// test integrity is fully preserved. Clean-workspace / first-run CI behaviour is unchanged because
+// clean is a no-op when the report directory does not yet exist.
+tasks.named('allureReport').configure {
+    clean.set(true)
+}
+
 test {
     useJUnitPlatform()
 }

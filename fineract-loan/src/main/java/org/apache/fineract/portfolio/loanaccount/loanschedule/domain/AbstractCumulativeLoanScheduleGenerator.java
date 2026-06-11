@@ -2854,7 +2854,12 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
         if (MathUtil.isEmpty(interest)) {
             return zero;
         }
-        if (isAfterPeriod(targetDate, installment) || DateUtils.isEqual(targetDate, installment.getDueDate())) {
+        // [Day-Count Convention feature]
+        DayCountConvention convention = DayCountConvention.fromInt(loan.getLoanProductRelatedDetail().getAccrualDayCountConvention());
+        // [Day-Count Convention feature]
+        boolean fullOrElapsedPeriod = isAfterPeriod(targetDate, installment) || DateUtils.isEqual(targetDate, installment.getDueDate());
+        // [Day-Count Convention feature]
+        if (convention == null && fullOrElapsedPeriod) {
             return installment.getInterestCharged(currency);
         }
 
@@ -2864,11 +2869,11 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
         if (DateUtils.isBefore(startDate, loan.getInterestChargedFromDate())) {
             startDate = loan.getInterestChargedFromDate();
         }
-        if (!DateUtils.isBefore(startDate, dueDate) || !DateUtils.isBefore(startDate, targetDate)) {
+        // [Day-Count Convention feature]
+        LocalDate effectiveEndDate = DateUtils.isAfter(targetDate, dueDate) ? dueDate : targetDate;
+        if (!DateUtils.isBefore(startDate, dueDate) || !DateUtils.isBefore(startDate, effectiveEndDate)) {
             return zero;
         }
-        // [Day-Count Convention feature]
-        DayCountConvention convention = DayCountConvention.fromInt(loan.getLoanProductRelatedDetail().getAccrualDayCountConvention());
         // [Day-Count Convention feature]
         if (convention != null) {
             // [Day-Count Convention feature]
@@ -2884,7 +2889,7 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
                 // [Day-Count Convention feature]
                 MathContext mc = MoneyHelper.getMathContext();
                 // [Day-Count Convention feature]
-                BigDecimal partialPeriodFraction = dayCountCalculator.dayCountFraction(startDate, targetDate);
+                BigDecimal partialPeriodFraction = dayCountCalculator.dayCountFraction(startDate, effectiveEndDate);
                 // [Day-Count Convention feature]
                 BigDecimal periodRate = annualNominalInterestRate.divide(BigDecimal.valueOf(100), mc);
                 // [Day-Count Convention feature]
@@ -2904,15 +2909,20 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
                     // [Day-Count Convention feature]
                     log.debug(
                             "Interest-accrual day-count convention computation: loanId={}, convention={}, periodStart={}, periodEnd={}, targetDate={}, partialPeriodDays={}, partialPeriodFraction={}, outstandingPrincipal={}, annualNominalInterestRate={}, accruedInterest={}",
-                            loan.getId(), conventionTag, startDate, dueDate, targetDate, dayCountCalculator.dayCount(startDate, targetDate),
-                            partialPeriodFraction, outstandingPrincipal, annualNominalInterestRate, accruedInterest.getAmount());
+                            loan.getId(), conventionTag, startDate, effectiveEndDate, targetDate,
+                            dayCountCalculator.dayCount(startDate, effectiveEndDate), partialPeriodFraction, outstandingPrincipal,
+                            annualNominalInterestRate, accruedInterest.getAmount());
                 }
                 // [Day-Count Convention feature]
                 return accruedInterest;
             }
+            // [Day-Count Convention feature]
+            if (fullOrElapsedPeriod) {
+                return installment.getInterestCharged(currency);
+            }
         }
         int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, dueDate);
-        int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, targetDate);
+        int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, effectiveEndDate);
         double interestPerDay = interest.doubleValue() / totalNumberOfDays;
         interestPortion = BigDecimal.valueOf(interestPerDay * daysToBeAccrued);
         return Money.of(currency, interestPortion);
