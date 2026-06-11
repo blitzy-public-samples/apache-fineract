@@ -33,6 +33,11 @@ dependencies {
     testImplementation(project(':fineract-avro-schemas'))
     testImplementation(project(':fineract-client-feign'))
     testImplementation(project(':fineract-e2e-tests-core').sourceSets.test.output)
+    // [Day-Count Convention feature] Put :fineract-core on the Cucumber runner's runtime classpath so the
+    // CSV-driven accrual step definition can load DayCountConvention and the day-count calculators. The
+    // e2e-tests-core dependency above is consumed only as a compiled sourceSets.test.output file collection,
+    // which carries no transitive dependencies, so :fineract-core would otherwise be absent at run time.
+    testImplementation(project(':fineract-core'))
 
     testImplementation 'org.springframework:spring-context'
     implementation 'org.springframework:spring-test'
@@ -95,7 +100,11 @@ cucumber {
 
     tags = 'not @Skip'
     if (project.hasProperty("cucumber.tags")) {
-        tags = [project.getProperty("cucumber.tags")]
+        // [Day-Count Convention feature] Pass the tag expression as a plain String. The cucumber-runner
+        // plugin's 'tags' property is a String; wrapping it in a List coerces to "[@Tag]" (with literal
+        // brackets) and matches no scenarios, so e.g. -Pcucumber.tags="@InterestAccrualDayCountFeature"
+        // would select 0 scenarios instead of the feature's 18 rows.
+        tags = project.getProperty("cucumber.tags")
     }
 
     if (project.hasProperty("cucumber.name")) {
