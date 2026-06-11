@@ -584,8 +584,7 @@ public class Loan extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         this.allowFullTermForTranche = allowFullTermForTranche;
         this.getLoanProductRelatedDetail()
                 .setEnableAccrualActivityPosting(loanProduct.getLoanProductRelatedDetail().isEnableAccrualActivityPosting());
-        // [Day-Count Convention feature] propagate the accrual day-count convention product -> loan embedded detail
-        // (mirrors the enableAccrualActivityPosting copy above); null when the product does not opt in.
+        // [Day-Count Convention feature] propagate convention product -> loan embedded detail (see decision log D19).
         this.getLoanProductRelatedDetail()
                 .setAccrualDayCountConvention(loanProduct.getLoanProductRelatedDetail().getAccrualDayCountConvention());
     }

@@ -21,8 +21,10 @@ package org.apache.fineract.portfolio.common.accrual;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 
+@Slf4j
 public class Actual365DayCountCalculator implements DayCountConventionCalculator {
 
     @Override
@@ -35,6 +37,12 @@ public class Actual365DayCountCalculator implements DayCountConventionCalculator
         if (periodStart.equals(periodEnd)) {
             return BigDecimal.ZERO;
         }
-        return BigDecimal.valueOf(dayCount(periodStart, periodEnd)).divide(BigDecimal.valueOf(365), MathContext.DECIMAL128);
+        final long days = dayCount(periodStart, periodEnd);
+        final BigDecimal fraction = BigDecimal.valueOf(days).divide(BigDecimal.valueOf(365), MathContext.DECIMAL128);
+        if (log.isDebugEnabled()) {
+            log.debug("Day-count convention computation: convention={}, periodStart={}, periodEnd={}, dayCountDays={}, dayCountFraction={}",
+                    "Actual/365", periodStart, periodEnd, days, fraction);
+        }
+        return fraction;
     }
 }

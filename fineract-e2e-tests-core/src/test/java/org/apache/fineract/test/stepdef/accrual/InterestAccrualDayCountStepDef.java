@@ -48,8 +48,7 @@ public class InterestAccrualDayCountStepDef extends AbstractStepDef {
         final DayCountConvention convention = toConvention(dayCountConvention);
         final DayCountConventionCalculator calculator = DayCountConventionCalculatorFactory.forConvention(convention);
 
-        // Real production calculation. MathContext.DECIMAL128 is intentional (NOT MoneyHelper.getMathContext()):
-        // the E2E JVM has no Fineract tenant context, and the calculator rounds HALF_UP to 2dp internally regardless.
+        // [Day-Count Convention feature] real production calculation (see decision log D17 for the MathContext choice).
         final BigDecimal actual = calculator.accruedInterest(principalAmount, annualRatePct, periodStart, periodEnd,
                 MathContext.DECIMAL128);
 

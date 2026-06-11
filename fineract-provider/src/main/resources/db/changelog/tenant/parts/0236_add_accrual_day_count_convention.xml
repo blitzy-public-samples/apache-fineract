@@ -28,7 +28,7 @@
             </column>
         </addColumn>
     </changeSet>
-    <!-- [Day-Count Convention feature] accrual_day_count_convention is also required on m_loan: LoanProductRelatedDetail is @Embeddable and embedded by both LoanProduct (m_product_loan) and Loan (m_loan), mirroring the days_in_year_enum precedent that exists in both tables. -->
+    <!-- [Day-Count Convention feature] m_loan column required for runtime propagation (rationale: see decision log D18). -->
     <changeSet author="fineract" id="2">
         <addColumn tableName="m_loan">
             <column name="accrual_day_count_convention" type="INT">

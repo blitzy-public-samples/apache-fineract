@@ -24,7 +24,7 @@
   <title>Configurable Day-Count Convention for Accrued Interest — Apache Fineract</title>
 
   <!-- To verify: open this file in a modern browser with internet access; all 16 slides and all 3 Mermaid diagrams must render using
-    reveal.js 5.1.0, Mermaid 11.4.0, Lucide 0.460.0. Use arrow keys / Space to navigate; press 'o' for overview. -->
+    reveal.js 5.1.0, Mermaid 11.15.0, Lucide 0.460.0. Use arrow keys / Space to navigate; press 'o' for overview. -->
 
   <!-- reveal.js BASE stylesheets ONLY (pinned 5.1.0). The Blitzy brand theme is defined inline below; no external theme or web-font is
     referenced. -->
@@ -632,13 +632,13 @@ sequenceDiagram
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <script type="module">
-    // Mermaid (ESM), CDN-pinned to 11.4.0.
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.esm.min.mjs';
+    // Mermaid (ESM), CDN-pinned to 11.15.0.
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs';
 
     // 1) Initialize Mermaid with brand-aligned theme variables (do not auto-start).
     mermaid.initialize({
       startOnLoad: false,
-      securityLevel: 'loose',
+      securityLevel: 'strict',
       theme: 'base',
       themeVariables: {
         primaryColor: '#F2F0FE',          // existing-node fill (lavender)

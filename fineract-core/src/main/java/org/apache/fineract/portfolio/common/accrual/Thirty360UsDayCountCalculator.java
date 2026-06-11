@@ -21,7 +21,9 @@ package org.apache.fineract.portfolio.common.accrual;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Thirty360UsDayCountCalculator implements DayCountConventionCalculator {
 
     @Override
@@ -49,6 +51,12 @@ public class Thirty360UsDayCountCalculator implements DayCountConventionCalculat
         if (periodStart.equals(periodEnd)) {
             return BigDecimal.ZERO;
         }
-        return BigDecimal.valueOf(dayCount(periodStart, periodEnd)).divide(BigDecimal.valueOf(360), MathContext.DECIMAL128);
+        final long days = dayCount(periodStart, periodEnd);
+        final BigDecimal fraction = BigDecimal.valueOf(days).divide(BigDecimal.valueOf(360), MathContext.DECIMAL128);
+        if (log.isDebugEnabled()) {
+            log.debug("Day-count convention computation: convention={}, periodStart={}, periodEnd={}, dayCountDays={}, dayCountFraction={}",
+                    "30/360 US", periodStart, periodEnd, days, fraction);
+        }
+        return fraction;
     }
 }
