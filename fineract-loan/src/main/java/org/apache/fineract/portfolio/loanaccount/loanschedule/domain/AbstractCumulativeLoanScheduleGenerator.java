@@ -41,11 +41,15 @@ import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
+import org.apache.fineract.organisation.monetary.domain.MoneyHelper;
 import org.apache.fineract.organisation.monetary.mapper.CurrencyMapper;
 import org.apache.fineract.organisation.workingdays.data.AdjustedDateDetailsDTO;
 import org.apache.fineract.organisation.workingdays.domain.RepaymentRescheduleType;
 import org.apache.fineract.portfolio.calendar.domain.CalendarInstance;
 import org.apache.fineract.portfolio.calendar.service.CalendarUtils;
+import org.apache.fineract.portfolio.common.accrual.DayCountConventionCalculator;
+import org.apache.fineract.portfolio.common.accrual.DayCountConventionCalculatorFactory;
+import org.apache.fineract.portfolio.common.domain.DayCountConvention;
 import org.apache.fineract.portfolio.common.domain.PeriodFrequencyType;
 import org.apache.fineract.portfolio.loanaccount.data.DisbursementData;
 import org.apache.fineract.portfolio.loanaccount.data.HolidayDetailDTO;
@@ -2851,6 +2855,27 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
         }
         if (!DateUtils.isBefore(startDate, dueDate) || !DateUtils.isBefore(startDate, targetDate)) {
             return zero;
+        }
+        // [Day-Count Convention feature]
+        DayCountConvention convention = DayCountConvention.fromInt(loan.getLoanProductRelatedDetail().getAccrualDayCountConvention());
+        // [Day-Count Convention feature]
+        if (convention != null) {
+            // [Day-Count Convention feature]
+            DayCountConventionCalculator dayCountCalculator = DayCountConventionCalculatorFactory.forConvention(convention);
+            // [Day-Count Convention feature]
+            BigDecimal fullPeriodFraction = dayCountCalculator.dayCountFraction(startDate, dueDate);
+            // [Day-Count Convention feature]
+            if (fullPeriodFraction.signum() == 0) {
+                return zero;
+            }
+            // [Day-Count Convention feature]
+            MathContext mc = MoneyHelper.getMathContext();
+            // [Day-Count Convention feature]
+            BigDecimal partialPeriodFraction = dayCountCalculator.dayCountFraction(startDate, targetDate);
+            // [Day-Count Convention feature]
+            interestPortion = interest.multiply(partialPeriodFraction, mc).divide(fullPeriodFraction, mc);
+            // [Day-Count Convention feature]
+            return Money.of(currency, interestPortion);
         }
         int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, dueDate);
         int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, targetDate);
