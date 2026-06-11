@@ -59,6 +59,8 @@ tasks.named('compileTestJava') {
 dependencies {
     testImplementation(project(':fineract-avro-schemas'))
     testImplementation(project(':fineract-client-feign'))
+    // [Day-Count Convention feature] in-process access to the real DayCountConvention calculator/factory for CSV-driven accrual E2E step defs
+    testImplementation(project(':fineract-core'))
 
     testImplementation 'org.springframework:spring-context'
     implementation 'org.springframework:spring-test'
