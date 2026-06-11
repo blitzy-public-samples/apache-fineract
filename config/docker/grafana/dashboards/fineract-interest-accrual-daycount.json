@@ -383,7 +383,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (convention) (rate(fineract_accrual_daycount_computations_seconds_sum{convention=~\"$convention\"}[5m])) / sum by (convention) (rate(fineract_accrual_daycount_computations_seconds_count{convention=~\"$convention\"}[5m]))",
+          "expr": "sum by (convention) (rate(fineract_accrual_daycount_computations_duration_seconds_sum{convention=~\"$convention\"}[5m])) / sum by (convention) (rate(fineract_accrual_daycount_computations_duration_seconds_count{convention=~\"$convention\"}[5m]))",
           "legendFormat": "{{convention}}",
           "range": true,
           "refId": "A"

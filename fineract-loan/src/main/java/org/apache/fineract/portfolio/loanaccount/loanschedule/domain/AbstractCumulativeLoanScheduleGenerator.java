@@ -21,6 +21,7 @@ package org.apache.fineract.portfolio.loanaccount.loanschedule.domain;
 import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isAfterPeriod;
 import static org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleProcessingWrapper.isBeforePeriod;
 
+import io.micrometer.core.instrument.Metrics;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -31,11 +32,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
 import org.apache.fineract.organisation.monetary.data.CurrencyData;
@@ -71,11 +75,18 @@ import org.apache.fineract.portfolio.loanaccount.loanschedule.exception.MultiDis
 import org.apache.fineract.portfolio.loanaccount.loanschedule.exception.ScheduleDateException;
 import org.apache.fineract.portfolio.loanproduct.domain.RepaymentStartDateType;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanScheduleGenerator {
 
     private final LoanTransactionRepository loanTransactionRepository;
     private final CurrencyMapper currencyMapper;
+    // [Day-Count Convention feature]
+    private static final String ACCRUAL_DAYCOUNT_COMPUTATIONS_METRIC_NAME = "fineract.accrual.daycount.computations";
+    // [Day-Count Convention feature]
+    private static final String ACCRUAL_DAYCOUNT_DURATION_METRIC_NAME = "fineract.accrual.daycount.computations.duration";
+    // [Day-Count Convention feature]
+    private static final String ACCRUAL_DAYCOUNT_CONVENTION_TAG = "convention";
 
     @Override
     public LoanScheduleModel generate(final MathContext mc, final LoanApplicationTerms loanApplicationTerms,
@@ -2861,11 +2872,14 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
         // [Day-Count Convention feature]
         if (convention != null) {
             // [Day-Count Convention feature]
+            long computationStartNanos = System.nanoTime();
+            // [Day-Count Convention feature]
             DayCountConventionCalculator dayCountCalculator = DayCountConventionCalculatorFactory.forConvention(convention);
             // [Day-Count Convention feature]
             BigDecimal fullPeriodFraction = dayCountCalculator.dayCountFraction(startDate, dueDate);
             // [Day-Count Convention feature]
             if (fullPeriodFraction.signum() == 0) {
+                // [Day-Count Convention feature]
                 return zero;
             }
             // [Day-Count Convention feature]
@@ -2875,7 +2889,26 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
             // [Day-Count Convention feature]
             interestPortion = interest.multiply(partialPeriodFraction, mc).divide(fullPeriodFraction, mc);
             // [Day-Count Convention feature]
-            return Money.of(currency, interestPortion);
+            Money accruedInterest = Money.of(currency, interestPortion);
+            // [Day-Count Convention feature]
+            String conventionTag = convention.name().toLowerCase(Locale.ROOT);
+            // [Day-Count Convention feature]
+            Metrics.globalRegistry.counter(ACCRUAL_DAYCOUNT_COMPUTATIONS_METRIC_NAME, ACCRUAL_DAYCOUNT_CONVENTION_TAG, conventionTag)
+                    .increment();
+            // [Day-Count Convention feature]
+            Metrics.globalRegistry.timer(ACCRUAL_DAYCOUNT_DURATION_METRIC_NAME, ACCRUAL_DAYCOUNT_CONVENTION_TAG, conventionTag)
+                    .record(System.nanoTime() - computationStartNanos, TimeUnit.NANOSECONDS);
+            // [Day-Count Convention feature]
+            if (log.isDebugEnabled()) {
+                // [Day-Count Convention feature]
+                log.debug(
+                        "Interest-accrual day-count convention computation: loanId={}, convention={}, periodStart={}, periodEnd={}, targetDate={}, fullPeriodDays={}, partialPeriodDays={}, fullPeriodFraction={}, partialPeriodFraction={}, periodInterest={}, accruedInterest={}",
+                        loan.getId(), conventionTag, startDate, dueDate, targetDate, dayCountCalculator.dayCount(startDate, dueDate),
+                        dayCountCalculator.dayCount(startDate, targetDate), fullPeriodFraction, partialPeriodFraction, interest,
+                        accruedInterest.getAmount());
+            }
+            // [Day-Count Convention feature]
+            return accruedInterest;
         }
         int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, dueDate);
         int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, targetDate);
