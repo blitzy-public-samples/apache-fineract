@@ -156,6 +156,9 @@ public final class LoanProductsApiResourceSwagger {
         public Integer daysInMonthType;
         @Schema(example = "1")
         public Integer daysInYearType;
+        // [Day-Count Convention feature]
+        @Schema(example = "1")
+        public Integer accrualDayCountConvention;
         @Schema(example = "FULL_LEAP_YEAR")
         public String daysInYearCustomStrategy;
         @Schema(example = "true")
