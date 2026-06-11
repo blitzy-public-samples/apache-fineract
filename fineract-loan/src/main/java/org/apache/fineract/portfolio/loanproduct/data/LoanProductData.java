@@ -141,6 +141,8 @@ public class LoanProductData implements Serializable {
     private final Integer overdueDaysForNPA;
     private final EnumOptionData daysInMonthType;
     private final EnumOptionData daysInYearType;
+    // [Day-Count Convention feature]
+    private Integer accrualDayCountConvention;
     private final boolean isInterestRecalculationEnabled;
     private final LoanProductInterestRecalculationData interestRecalculationData;
     private final Integer minimumDaysBetweenDisbursalAndFirstRepayment;
