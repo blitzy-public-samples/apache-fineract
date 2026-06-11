@@ -167,7 +167,8 @@ public final class LoanProductDataValidator {
             LoanProductConstants.MAX_TRANCHE_COUNT_PARAMETER_NAME, LoanProductConstants.GRACE_ON_ARREARS_AGEING_PARAMETER_NAME,
             LoanProductConstants.OVERDUE_DAYS_FOR_NPA_PARAMETER_NAME, LoanProductConstants.IS_INTEREST_RECALCULATION_ENABLED_PARAMETER_NAME,
             LoanProductConstants.DAYS_IN_YEAR_TYPE_PARAMETER_NAME, LoanProductConstants.DAYS_IN_MONTH_TYPE_PARAMETER_NAME,
-            LoanProductConstants.rescheduleStrategyMethodParameterName,
+            // [Day-Count Convention feature]
+            LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, LoanProductConstants.rescheduleStrategyMethodParameterName,
             LoanProductConstants.interestRecalculationCompoundingMethodParameterName,
             LoanProductConstants.recalculationRestFrequencyIntervalParameterName,
             LoanProductConstants.recalculationRestFrequencyTypeParameterName,
@@ -411,6 +412,14 @@ public final class LoanProductDataValidator {
                 element, Locale.getDefault());
         baseDataValidator.reset().parameter(LoanProductConstants.DAYS_IN_YEAR_TYPE_PARAMETER_NAME).value(daysInYearType).notNull()
                 .isOneOfTheseValues(1, 360, 364, 365);
+
+        // [Day-Count Convention feature]
+        if (this.fromApiJsonHelper.parameterExists(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element)) {
+            final Integer accrualDayCountConvention = this.fromApiJsonHelper
+                    .extractIntegerNamed(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element, Locale.getDefault());
+            baseDataValidator.reset().parameter(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME)
+                    .value(accrualDayCountConvention).notNull().isOneOfTheseValues(1, 2, 3);
+        }
 
         final Integer daysInMonthType = this.fromApiJsonHelper.extractIntegerNamed(LoanProductConstants.DAYS_IN_MONTH_TYPE_PARAMETER_NAME,
                 element, Locale.getDefault());
@@ -1517,6 +1526,14 @@ public final class LoanProductDataValidator {
                     element, Locale.getDefault());
             baseDataValidator.reset().parameter(LoanProductConstants.DAYS_IN_YEAR_TYPE_PARAMETER_NAME).value(daysInYearType).notNull()
                     .isOneOfTheseValues(1, 360, 364, 365);
+        }
+
+        // [Day-Count Convention feature]
+        if (this.fromApiJsonHelper.parameterExists(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element)) {
+            final Integer accrualDayCountConvention = this.fromApiJsonHelper
+                    .extractIntegerNamed(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, element, Locale.getDefault());
+            baseDataValidator.reset().parameter(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME)
+                    .value(accrualDayCountConvention).notNull().isOneOfTheseValues(1, 2, 3);
         }
 
         if (this.fromApiJsonHelper.parameterExists(LoanProductConstants.DAYS_IN_MONTH_TYPE_PARAMETER_NAME, element)) {
