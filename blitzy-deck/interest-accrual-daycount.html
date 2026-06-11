@@ -1,0 +1,657 @@
+<!doctype html>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurable Day-Count Convention for Accrued Interest — Apache Fineract</title>
+
+  <!-- To verify: open this file in a modern browser with internet access; all 16 slides and all 3 Mermaid diagrams must render using reveal.js 5.1.0, Mermaid 11.4.0, Lucide 0.460.0. Use arrow keys / Space to navigate; press 'o' for overview. -->
+
+  <!-- reveal.js BASE stylesheets ONLY (pinned 5.1.0). The Blitzy brand theme is defined inline below; no external theme or web-font is referenced. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+
+  <style>
+    /* =====================================================================
+       Blitzy brand theme — embedded inline as CSS custom properties.
+       (The canonical external brand theme stylesheet does NOT exist in the
+        repository and is intentionally NOT referenced; the full theme is
+        defined inline here so the deck stays self-contained.)
+       ===================================================================== */
+    :root{
+      --blitzy-primary:#5B39F3;       /* primary violet — headings, accents, links, CTAs */
+      --blitzy-indigo:#2D1C77;        /* deep indigo — gradients, strong accents */
+      --blitzy-indigo-deep:#1A105F;   /* deepest indigo — dark slide backgrounds, heading text */
+      --blitzy-mint:#94FAD5;          /* mint/teal — signals NEW components, highlights, positive */
+      --blitzy-lavender:#F2F0FE;      /* light lavender — light surfaces, table zebra, cards */
+      --blitzy-text:#333333;          /* neutral body text on light surfaces */
+      --blitzy-surface:#FFFFFF;       /* white surfaces/cards */
+      --blitzy-border:#E3DEFA;        /* subtle lavender border for tables/cards */
+      --blitzy-gradient:linear-gradient(135deg,#1A105F 0%,#2D1C77 45%,#5B39F3 100%);
+
+      /* Typography — system stack only (NO external font CDN). */
+      --blitzy-font-sans:'Inter','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+      --blitzy-font-mono:'JetBrains Mono','SFMono-Regular','SF Mono',Consolas,'Liberation Mono',Menlo,monospace;
+    }
+
+    /* ---- Base / canvas -------------------------------------------------- */
+    html, .reveal-viewport{ background:#F4F2FC; }
+    .reveal{ font-family:var(--blitzy-font-sans); color:var(--blitzy-text); font-size:30px; }
+    .reveal .slides{ text-align:left; }
+    .reveal .slides section{ height:100%; box-sizing:border-box; padding:48px 64px; }
+
+    /* ---- Headings ------------------------------------------------------- */
+    .reveal h1,.reveal h2,.reveal h3{
+      font-family:var(--blitzy-font-sans); color:var(--blitzy-indigo-deep);
+      font-weight:800; line-height:1.1; margin:0 0 0.4em 0; text-transform:none; letter-spacing:-0.5px;
+    }
+    .reveal h1{ font-size:68px; }
+    .reveal h2{ font-size:46px; color:var(--blitzy-primary); }
+    .reveal h3{ font-size:30px; color:var(--blitzy-indigo-deep); }
+    .reveal p,.reveal li{ font-size:30px; line-height:1.45; }
+    .reveal ul,.reveal ol{ margin:0 0 0 1.1em; }
+    .reveal li{ margin:0.28em 0; }
+    .reveal strong{ color:var(--blitzy-indigo-deep); font-weight:800; }
+    .reveal em{ color:var(--blitzy-primary); font-style:normal; font-weight:700; }
+    .reveal a{ color:var(--blitzy-primary); }
+
+    /* ---- Slide header (icon + title) ------------------------------------ */
+    .slide-head{ display:flex; align-items:center; gap:18px; margin-bottom:18px; }
+    .slide-head h2{ margin:0; }
+    .slide-head .hicon{ color:var(--blitzy-primary); flex:0 0 auto; }
+    .kicker{
+      display:inline-block; text-transform:uppercase; letter-spacing:3px;
+      font-size:20px; font-weight:800; color:var(--blitzy-primary); margin-bottom:8px;
+    }
+
+    /* ---- Title / section slides (full-bleed gradient, white text) ------- */
+    .slide-title, .slide-section{ text-align:center; }
+    .slide-title h1, .slide-section h1,
+    .slide-title h2, .slide-section h2,
+    .slide-title h3, .slide-section h3,
+    .slide-title p,  .slide-section p,
+    .slide-title li, .slide-section li{ color:#FFFFFF; }
+    .slide-title .subtitle{ font-size:38px; color:#EDE9FF; font-weight:500; margin-top:0.2em; }
+    .slide-title .tagline{ font-size:26px; color:var(--blitzy-mint); font-weight:700; letter-spacing:1px; margin-top:1.4em; }
+    .slide-title .eyebrow{ font-size:24px; color:var(--blitzy-mint); letter-spacing:6px; text-transform:uppercase; font-weight:700; }
+
+    /* ---- Blitzy wordmark (text only, no external logo image) ------------ */
+    .wordmark{
+      position:absolute; top:30px; right:46px; z-index:20;
+      font-weight:900; letter-spacing:5px; font-size:22px; color:var(--blitzy-primary);
+    }
+    .wordmark .dot{ color:var(--blitzy-mint); }
+    .slide-title .wordmark, .slide-section .wordmark{ color:#FFFFFF; }
+    .slide-title .wordmark .dot, .slide-section .wordmark .dot{ color:var(--blitzy-mint); }
+
+    /* ---- Footer --------------------------------------------------------- */
+    .slide-footer{
+      position:absolute; bottom:22px; left:64px; z-index:20;
+      font-size:18px; color:#9A95B6; letter-spacing:0.4px;
+    }
+
+    /* ---- Cards / grid --------------------------------------------------- */
+    .cards{ display:flex; gap:26px; align-items:stretch; margin-top:10px; }
+    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-top:10px; }
+    .card{
+      flex:1; background:var(--blitzy-surface); border:1px solid var(--blitzy-border);
+      border-radius:18px; padding:26px 28px; box-shadow:0 6px 22px rgba(45,28,119,0.06);
+    }
+    .card h3{ display:flex; align-items:center; gap:12px; margin-bottom:10px; color:var(--blitzy-indigo-deep); }
+    .card.accent{ border-top:6px solid var(--blitzy-primary); }
+    .card.accent-mint{ border-top:6px solid var(--blitzy-mint); }
+    .card .ci{ color:var(--blitzy-primary); }
+    .card .ci-mint{ color:#13B886; }
+    .card p, .card li{ font-size:26px; }
+    .card .frac{ font-family:var(--blitzy-font-mono); font-size:24px; color:var(--blitzy-indigo-deep);
+                 background:var(--blitzy-lavender); border:1px solid var(--blitzy-border);
+                 border-radius:8px; padding:6px 10px; display:inline-block; margin-top:6px; }
+
+    /* ---- Badges (New / Extended / Reused) ------------------------------- */
+    .badge{ display:inline-block; padding:3px 14px; border-radius:999px; font-size:19px; font-weight:800;
+            letter-spacing:0.5px; vertical-align:middle; }
+    .badge-new{ background:var(--blitzy-mint); color:var(--blitzy-indigo-deep); }
+    .badge-ext{ background:var(--blitzy-lavender); color:var(--blitzy-indigo); border:1px solid var(--blitzy-border); }
+    .badge-reuse{ background:#ECEAF1; color:#5B5670; border:1px solid #DDD9E6; }
+
+    /* ---- Inline code / formula ------------------------------------------ */
+    code, .code-chip{
+      font-family:var(--blitzy-font-mono); background:var(--blitzy-lavender);
+      border:1px solid var(--blitzy-border); border-radius:8px; padding:2px 9px;
+      color:var(--blitzy-indigo-deep); font-size:0.92em;
+    }
+    .formula{
+      font-family:var(--blitzy-font-mono); font-size:40px; font-weight:700; text-align:center;
+      color:#FFFFFF; background:var(--blitzy-gradient); border-radius:16px;
+      padding:34px 28px; margin:14px auto 22px auto; box-shadow:0 10px 30px rgba(26,16,95,0.25);
+    }
+    .formula .v-prin{ color:var(--blitzy-mint); }
+    .formula .v-rate{ color:#FFD8A8; }
+    .formula .v-frac{ color:#A8D8FF; }
+    .mono{ font-family:var(--blitzy-font-mono); }
+
+    /* ---- Tables --------------------------------------------------------- */
+    .reveal table{ border-collapse:collapse; width:100%; margin:8px 0; }
+    .reveal table th, .reveal table td{ border:1px solid var(--blitzy-border); padding:8px 12px; text-align:left; }
+    .reveal table thead th{ background:var(--blitzy-indigo); color:#FFFFFF; font-weight:700; }
+    .reveal table tbody tr:nth-child(even){ background:var(--blitzy-lavender); }
+    .reveal table.dataset{ font-size:17px; }
+    .reveal table.dataset th, .reveal table.dataset td{ padding:4px 8px; }
+    .reveal table.dataset td.num{ font-family:var(--blitzy-font-mono); text-align:right; white-space:nowrap; }
+    .reveal table.dataset td.exp{ font-family:var(--blitzy-font-mono); text-align:right; font-weight:800;
+                                  color:var(--blitzy-indigo-deep); background:rgba(148,250,213,0.30); }
+    .reveal table.dataset .hl{ font-weight:800; color:var(--blitzy-primary); }
+
+    /* ---- Legend (for diagram slides) ------------------------------------ */
+    .legend{
+      margin-top:16px; font-size:21px; line-height:1.4; background:var(--blitzy-lavender);
+      border-left:6px solid var(--blitzy-primary); border-radius:10px; padding:14px 20px;
+    }
+    .legend .swatch{ display:inline-block; width:18px; height:18px; border-radius:4px; vertical-align:-3px; margin:0 4px 0 0; }
+    .swatch-mint{ background:var(--blitzy-mint); border:1px solid var(--blitzy-indigo); }
+    .swatch-lav{ background:var(--blitzy-lavender); border:1px solid var(--blitzy-primary); }
+    .legend b{ color:var(--blitzy-indigo-deep); }
+
+    /* ---- Callout / note ------------------------------------------------- */
+    .note{ background:#FFFFFF; border:1px solid var(--blitzy-border); border-left:6px solid var(--blitzy-mint);
+           border-radius:10px; padding:16px 22px; font-size:26px; margin-top:14px; }
+    .warn{ border-left-color:#F2A33C; }
+    .pointer{ font-size:21px; color:#6E6890; margin-top:18px; }
+
+    /* ---- Lucide icons --------------------------------------------------- */
+    .reveal [data-lucide], .reveal svg.lucide{
+      width:1em; height:1em; stroke:currentColor; stroke-width:2; vertical-align:-0.14em;
+    }
+    .hicon svg.lucide, .hicon[data-lucide]{ width:1.25em; height:1.25em; }
+    .big-ico svg.lucide, .big-ico[data-lucide]{ width:1.5em; height:1.5em; }
+    .ico-mint{ color:#13B886; }
+    .ico-primary{ color:var(--blitzy-primary); }
+    .ico-warn{ color:#E8893B; }
+
+    /* ---- Mermaid sizing (fit a 1080px slide with title + legend) --------
+       Force a definite width and override Mermaid's baked-in inline max-width
+       (an SVG with only a viewBox and width:auto collapses to 0 inside a flex
+       container). preserveAspectRatio keeps the diagram undistorted. */
+    .reveal .mermaid{ max-width:100%; display:flex; justify-content:center; margin:0; }
+    .reveal .mermaid svg{ width:100% !important; height:auto !important; max-width:1700px !important; max-height:680px !important; }
+
+    /* ---- Misc ----------------------------------------------------------- */
+    .reveal .slides section.pad-tight{ padding-top:40px; }
+    .center-block{ max-width:1500px; margin:0 auto; }
+    .muted{ color:#6E6890; }
+    .small{ font-size:24px; }
+    hr.rule{ border:none; border-top:2px solid var(--blitzy-border); margin:18px 0; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+<!-- ====================== SLIDES INSERTED BELOW ====================== -->
+
+      <!-- ===== Slide 1 — Title (gradient/section) ===== -->
+      <section class="slide-title" data-background-gradient="linear-gradient(135deg,#1A105F 0%,#2D1C77 45%,#5B39F3 100%)">
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="eyebrow">Executive Summary</div>
+        <h1>Configurable Day-Count Convention<br/>for Accrued Interest</h1>
+        <p class="subtitle">Apache Fineract — calculation correctness &amp; per-product configurability</p>
+        <p class="tagline">Select how the day-count fraction is derived — per loan product, at accrual time</p>
+      </section>
+
+      <!-- ===== Slide 2 — Executive Summary / TL;DR ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="clipboard-list"></i></span><h2>Executive Summary</h2></div>
+        <ul>
+          <li>Loan products can now <strong>select how the day-count fraction</strong> for accrued interest is derived.</li>
+          <li>Three conventions supported: <strong>Actual/360</strong>, <strong>Actual/365 (Fixed)</strong>, and <strong>30/360 US</strong>.</li>
+          <li>Fully <em>additive &amp; backward-compatible</em> — products that don't opt in behave <strong>exactly as today</strong>.</li>
+          <li>Correctness proven against an <strong>18-row committed acceptance dataset</strong>, exercised through the <em>real accrual path</em>.</li>
+        </ul>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 3 — The Business Problem ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon ico-warn"><i data-lucide="triangle-alert"></i></span><h2>The Business Problem</h2></div>
+        <ul>
+          <li>Today, the day-count convention is <strong>not independently selectable</strong> for interest accrual.</li>
+          <li>An incorrect day-count fraction flows <strong>straight into General Ledger postings</strong>…</li>
+          <li>…which <em>breaks reconciliation</em> — a material, institution-grade correctness risk.</li>
+        </ul>
+        <div class="note warn"><strong>Business need:</strong> calculation <strong>correctness</strong> &amp; per-product <strong>configurability</strong>.</div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 4 — The Solution at a Glance ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="lightbulb"></i></span><h2>The Solution at a Glance</h2></div>
+        <ul>
+          <li>A <strong>per-loan-product selectable convention</strong> that reaches the accrual calculation <strong>at run time</strong>.</li>
+          <li>Isolated <strong>new calculators</strong> plus <strong>one</strong> minimal, null-guarded change at the accrual point.</li>
+          <li>The existing <strong>General Ledger posting is reused unchanged</strong>.</li>
+        </ul>
+        <div class="note"><em>Extend the existing engine — don't replace it.</em></div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 5 — The Canonical Formula ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="sigma"></i></span><h2>The Canonical Formula</h2></div>
+        <div class="formula center-block">accrued_interest = <span class="v-prin">principal</span> × <span class="v-rate">annual_rate</span> × <span class="v-frac">day_count_fraction</span></div>
+        <ul>
+          <li>The amount is rounded <strong>HALF_UP to currency precision (2 dp)</strong>, reusing Fineract's <code>Money</code> / <code>MoneyHelper</code> semantics.</li>
+          <li><strong>Zero-day safety:</strong> when <code>start == end</code>, the fraction = 0 and accrued = <code>0.00</code> (no divide-by-zero).</li>
+        </ul>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 6 — The Three Conventions (3 cards) ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="scale"></i></span><h2>The Three Conventions</h2></div>
+        <div class="cards">
+          <div class="card accent">
+            <h3><span class="ci"><i data-lucide="calendar"></i></span> Actual/360</h3>
+            <p>Actual elapsed days over a 360-day year.</p>
+            <span class="frac">fraction = actual days ÷ 360</span>
+          </div>
+          <div class="card accent">
+            <h3><span class="ci"><i data-lucide="calendar"></i></span> Actual/365 (Fixed)</h3>
+            <p>Actual elapsed days over a fixed 365-day denominator.</p>
+            <span class="frac">fraction = actual days ÷ 365</span>
+          </div>
+          <div class="card accent-mint">
+            <h3><span class="ci-mint"><i data-lucide="calendar-days"></i></span> 30/360 US</h3>
+            <p>30-day months, 360-day year, with US month-end adjustments <span class="muted">(next slide)</span>.</p>
+            <span class="frac">fraction = 30/360 days ÷ 360</span>
+          </div>
+        </div>
+        <div class="note">These are the <strong>only three</strong> conventions in scope.</div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 7 — 30/360 US: the month-end rules ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="calendar-days"></i></span><h2>30/360 US — the month-end rules</h2></div>
+        <div class="formula center-block" style="font-size:32px;">days = 360·(Y2−Y1) + 30·(M2−M1) + (D2−D1)&nbsp;&nbsp;&nbsp;then ÷ 360</div>
+        <ul>
+          <li><strong>Adjustment order:</strong> if <code>D1 = 31</code> then <code>D1 → 30</code>; then if <code>D2 = 31</code> <strong>and</strong> <code>D1 ∈ {30, 31}</code> then <code>D2 → 30</code>.</li>
+          <li><strong>Key behavior:</strong> end-day 31 is <em>not</em> adjusted when the start day is not 30/31 — which is why scenario <strong>S4</strong> (<code>2025-01-01 → 2025-03-31</code>) yields <strong>90 days</strong>.</li>
+        </ul>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+
+      <!-- ===== Slide 8 — Mermaid #1: Feature Component Interaction ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="network"></i></span><h2>Architecture — Feature Component Interaction</h2></div>
+        <div class="mermaid">
+graph TD
+    subgraph Config["Loan Product Configuration (additive, optional)"]
+        API["LoanProductsApiResource&lt;br/&gt;(optional JSON param)"]
+        VAL["LoanProductDataValidator&lt;br/&gt;(validate 1/2/3, optional)"]
+        ASM["LoanProductAssembler&lt;br/&gt;(set on entity, null when absent)"]
+        DET["LoanProductRelatedDetail&lt;br/&gt;(+ accrual_day_count_convention)"]
+        API --> VAL --> ASM --> DET
+    end
+    subgraph Accrual["Interest Accrual Path (existing, minimally modified)"]
+        SVC["LoanAccrualsProcessingServiceImpl&lt;br/&gt;addInterestAccrual (L503)"]
+        GEN["AbstractCumulativeLoanScheduleGenerator&lt;br/&gt;getPeriodInterestTillDate (L2828-2860)"]
+        SVC --> GEN
+    end
+    subgraph New["Day-Count Convention Abstraction (NEW, isolated)"]
+        ENUM["DayCountConvention enum&lt;br/&gt;ACTUAL_360 / ACTUAL_365 / THIRTY_360_US"]
+        CALC["DayCountConventionCalculator (strategy)&lt;br/&gt;+ 3 implementations"]
+        ENUM --> CALC
+    end
+    subgraph GL["General Ledger (existing, unchanged)"]
+        POST["AccrualBasedAccountingProcessorForLoan&lt;br/&gt;LoanJournalEntryPoster"]
+    end
+    DET -. "convention read at accrual time" .-> GEN
+    GEN -- "if convention set" --> CALC
+    CALC -- "rounded accrued amount" --> GEN
+    GEN --> POST
+    classDef newcomp fill:#94FAD5,stroke:#2D1C77,stroke-width:2px,color:#1A105F;
+    classDef existing fill:#F2F0FE,stroke:#5B39F3,color:#333333;
+    class ENUM,CALC newcomp;
+    class API,VAL,ASM,DET,SVC,GEN,POST existing;
+        </div>
+        <div class="legend">
+          <b>Feature Component Interaction — target state.</b>
+          <span class="swatch swatch-mint"></span><b>mint</b> = NEW isolated components &nbsp;·&nbsp;
+          <span class="swatch swatch-lav"></span><b>lavender</b> = EXISTING Fineract components (the GL group is reused entirely unchanged) &nbsp;·&nbsp;
+          solid arrow = call / data flow &nbsp;·&nbsp; dotted arrow = configuration value read at accrual time.
+        </div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 9 — Mermaid #2: Accrual Data Flow ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="workflow"></i></span><h2>Accrual Data Flow — with the convention branch</h2></div>
+        <div class="mermaid">
+flowchart TD
+    START([COB / accrual trigger]) --> SVC["LoanAccrualsProcessingServiceImpl.addInterestAccrual"]
+    SVC --> Q{"Partial period?&lt;br/&gt;(targetDate within installment)"}
+    Q -- "No (full/past period)" --> FULL["use installment.getInterestCharged"]
+    Q -- "Yes" --> GEN["getPeriodInterestTillDate(installment, targetDate)"]
+    GEN --> C{"accrualDayCountConvention&lt;br/&gt;set on product?"}
+    C -- "No (null) — DEFAULT" --> OLD["EXISTING actual-day apportionment&lt;br/&gt;(L2855-2858, unchanged)"]
+    C -- "Yes" --> NEW["DayCountConventionCalculator&lt;br/&gt;fraction + rounded amount"]
+    OLD --> AMT["interest portion (Money)"]
+    NEW --> AMT
+    FULL --> AMT
+    AMT --> GL["AccrualBasedAccountingProcessorForLoan&lt;br/&gt;→ journal entries (unchanged)"]
+    GL --> ENDN([GL reflects accrued interest])
+    classDef newcomp fill:#94FAD5,stroke:#2D1C77,stroke-width:2px,color:#1A105F;
+    classDef existing fill:#F2F0FE,stroke:#5B39F3,color:#333333;
+    class NEW newcomp;
+    class START,SVC,FULL,GEN,OLD,AMT,GL,ENDN existing;
+        </div>
+        <div class="legend">
+          <b>Accrual Data Flow — target state.</b>
+          Diamonds = decision points &nbsp;·&nbsp; the <b>"convention set?"</b> diamond is the only NEW branch &nbsp;·&nbsp;
+          the <b>No (null)</b> path is the byte-for-byte unchanged default behavior &nbsp;·&nbsp;
+          all downstream GL posting is reused unchanged.
+        </div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 10 — Mermaid #3: Configuration Command Pipeline ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="route"></i></span><h2>Loan-Product Configuration Command Pipeline</h2></div>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Client as API Client
+    participant API as LoanProductsApiResource
+    participant CMD as SynchronousCommandProcessingService
+    participant H as LoanProduct CommandHandler
+    participant V as LoanProductDataValidator
+    participant A as LoanProductAssembler
+    participant E as LoanProductRelatedDetail
+    participant DB as m_product_loan
+    Client->>API: POST/PUT loan product (+ optional accrualDayCountConvention)
+    API->>CMD: logCommandSource / executeCommand
+    CMD->>H: handle(command)
+    H->>V: validate (optional param 1/2/3, else skip)
+    V-->>H: ok
+    H->>A: assemble (set convention, null when absent)
+    A->>E: setAccrualDayCountConvention(value or null)
+    E->>DB: persist (accrual_day_count_convention nullable)
+    Note over V,E: Only the optional field is new — the pipeline is unchanged
+        </div>
+        <div class="legend">
+          <b>Loan-Product Configuration Command Pipeline.</b>
+          This is the EXISTING CQS command pipeline &nbsp;·&nbsp; the only addition is the optional
+          <code>accrualDayCountConvention</code> field carried end-to-end &nbsp;·&nbsp;
+          a null/absent value persists as NULL and preserves current behavior exactly.
+        </div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+
+      <!-- ===== Slide 11 — Design Principles (4 cards) ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="compass"></i></span><h2>Design Principles</h2></div>
+        <div class="grid-2">
+          <div class="card accent-mint">
+            <h3><span class="ci-mint"><i data-lucide="puzzle"></i></span> Additive &amp; backward-compatible</h3>
+            <p>One <strong>optional</strong> JSON field <code>accrualDayCountConvention</code>; a nullable DB column; <strong>NULL = today's behavior byte-for-byte</strong> (no silent change).</p>
+          </div>
+          <div class="card accent">
+            <h3><span class="ci"><i data-lucide="scissors"></i></span> Minimal change &amp; isolation</h3>
+            <p>New logic in dedicated files; exactly <strong>one</strong> production method behaviorally changed; every edit to an existing file tagged <code>// [Day-Count Convention feature]</code>.</p>
+          </div>
+          <div class="card accent">
+            <h3><span class="ci"><i data-lucide="recycle"></i></span> Reuse, don't reinvent</h3>
+            <p>Reuse <code>Money</code>/<code>MoneyHelper</code> rounding, <code>DateUtils</code>, the existing accrual engine and GL engine. <strong>No parallel engine, no new numeric approach, no new third-party dependency.</strong></p>
+          </div>
+          <div class="card accent-mint">
+            <h3><span class="ci-mint"><i data-lucide="shield-check"></i></span> Safety</h3>
+            <p>Null-guarded everywhere; the <strong>zero-day boundary accrues <code>0.00</code></strong> with no divide-by-zero.</p>
+          </div>
+        </div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 12 — Key Components: New vs. Extended vs. Reused ===== -->
+      <section class="pad-tight">
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="layers"></i></span><h2>Key Components — New vs. Extended vs. Reused</h2></div>
+        <ul style="list-style:none; margin-left:0;">
+          <li><span class="badge badge-new">NEW</span> &nbsp;<strong>Isolated in <code>fineract-core</code>:</strong> <code>DayCountConvention</code> enum (<code>ACTUAL_360=1</code>, <code>ACTUAL_365=2</code>, <code>THIRTY_360_US=3</code>; <code>fromInt</code> returns null for null = backward-compatible) + <code>DayCountConventionCalculator</code> strategy interface + three calculators (Actual360, Actual365, Thirty360Us) + optional factory.</li>
+          <li style="margin-top:0.5em;"><span class="badge badge-ext">EXTENDED</span> &nbsp;<strong>Additive config:</strong> <code>LoanProductRelatedDetail</code> (+ nullable <code>accrual_day_count_convention</code> column), <code>LoanProductConstants</code>, <code>LoanProductDataValidator</code> (validate 1/2/3, optional), <code>LoanProductAssembler</code>, <code>LoanProductData</code>, <code>LoanProductsApiResourceSwagger</code>; new Liquibase migration part <code>0236</code> registered in <code>changelog-tenant.xml</code>.</li>
+          <li style="margin-top:0.5em;"><span class="badge badge-ext">1 CHANGE</span> &nbsp;<strong>Single behavioral change:</strong> <code>AbstractCumulativeLoanScheduleGenerator.getPeriodInterestTillDate</code> (a null-guarded branch).</li>
+          <li style="margin-top:0.5em;"><span class="badge badge-reuse">REUSED</span> &nbsp;<strong>Unchanged GL posting:</strong> <code>AccrualBasedAccountingProcessorForLoan</code>, <code>LoanJournalEntryPoster</code>.</li>
+        </ul>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 13 — The Single Change Point + GL Reuse ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="pencil-ruler"></i></span><h2>The Single Change Point + GL Reuse</h2></div>
+        <div class="grid-2">
+          <div class="card">
+            <h3><span class="badge badge-reuse">BEFORE</span> &nbsp;Actual days only</h3>
+            <p class="mono small">interestPerDay = interest ÷ totalDays<br/>portion = interestPerDay × daysToAccrue</p>
+            <p>Period interest was apportioned by <strong>actual elapsed days only</strong> — no convention selectability.</p>
+          </div>
+          <div class="card accent-mint">
+            <h3><span class="badge badge-new">AFTER</span> &nbsp;Convention-aware</h3>
+            <p>When a convention <strong>is set</strong>, the day-count fraction comes from the <strong>calculator</strong>; when it is <strong>null</strong>, the existing actual-day path runs <strong>unchanged</strong>.</p>
+          </div>
+        </div>
+        <div class="note">The corrected <code>Money</code> amount then flows through the <strong>existing</strong> journal-entry mechanics — the General Ledger, chart of accounts, and double-entry engine are <strong>untouched</strong>.</div>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+
+      <!-- ===== Slide 14 — Acceptance Dataset (18 rows = 6 scenarios × 3 conventions) ===== -->
+      <section class="pad-tight">
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="table"></i></span><h2>Acceptance Dataset — Definition of Done</h2></div>
+        <p class="small muted" style="margin:0 0 6px 0;"><strong>18 rows = 6 scenarios × 3 conventions</strong> · read-only file <code>fineract-e2e-tests-runner/src/test/resources/features/InterestAccrualDayCount.csv</code> · the asserted output is <strong>Expected Accrued</strong>.</p>
+        <table class="dataset">
+          <thead>
+            <tr><th>Test ID</th><th>Scenario</th><th>Principal</th><th>Rate %</th><th>Convention</th><th>Start</th><th>End</th><th>Days</th><th>Fraction</th><th>Expected Accrued</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>S1-Actual_360</td><td>Base one-month period</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">31</td><td class="num">0.08611111</td><td class="exp">430.56</td></tr>
+            <tr><td>S1-Actual_365</td><td>Base one-month period</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">31</td><td class="num">0.08493150</td><td class="exp">424.66</td></tr>
+            <tr><td>S1-30_360</td><td>Base one-month period</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">30</td><td class="num">0.08333333</td><td class="exp">416.67</td></tr>
+            <tr><td>S2-Actual_360</td><td>Full non-leap year</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">365</td><td class="num">1.01388888</td><td class="exp">5069.44</td></tr>
+            <tr><td>S2-Actual_365</td><td>Full non-leap year</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">365</td><td class="num">1</td><td class="exp">5000.00</td></tr>
+            <tr><td>S2-30_360</td><td>Full non-leap year</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">360</td><td class="num">1</td><td class="exp">5000.00</td></tr>
+            <tr><td>S3-Actual_360</td><td>Leap-year February</td><td class="num">250000</td><td class="num">4.25</td><td>Actual/360</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">29</td><td class="num">0.08055555</td><td class="exp">855.90</td></tr>
+            <tr><td>S3-Actual_365</td><td>Leap-year February</td><td class="num">250000</td><td class="num">4.25</td><td>Actual/365</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">29</td><td class="num">0.07945205</td><td class="exp">844.18</td></tr>
+            <tr><td>S3-30_360</td><td>Leap-year February</td><td class="num">250000</td><td class="num">4.25</td><td>30/360</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">30</td><td class="num">0.08333333</td><td class="exp">885.42</td></tr>
+            <tr><td>S4-Actual_360</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-03-31</td><td class="num">89</td><td class="num">0.24722222</td><td class="exp">1236.11</td></tr>
+            <tr><td>S4-Actual_365</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-03-31</td><td class="num">89</td><td class="num">0.24383561</td><td class="exp">1219.18</td></tr>
+            <tr><td>S4-30_360</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-03-31</td><td class="num hl">90</td><td class="num">0.25</td><td class="exp">1250.00</td></tr>
+            <tr><td>S5-Actual_360</td><td>Single-day period</td><td class="num">1000000</td><td class="num">3.65</td><td>Actual/360</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td class="num">0.00277777</td><td class="exp">101.39</td></tr>
+            <tr><td>S5-Actual_365</td><td>Single-day period</td><td class="num">1000000</td><td class="num">3.65</td><td>Actual/365</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td class="num">0.00273972</td><td class="exp">100.00</td></tr>
+            <tr><td>S5-30_360</td><td>Single-day period</td><td class="num">1000000</td><td class="num">3.65</td><td>30/360</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td class="num">0.00277777</td><td class="exp">101.39</td></tr>
+            <tr><td>S6-Actual_360</td><td>Zero-day boundary</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td class="exp hl">0.00</td></tr>
+            <tr><td>S6-Actual_365</td><td>Zero-day boundary</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td class="exp hl">0.00</td></tr>
+            <tr><td>S6-30_360</td><td>Zero-day boundary</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td class="exp hl">0.00</td></tr>
+          </tbody>
+        </table>
+        <p class="small muted" style="margin-top:6px;">Boundaries: base one-month · full non-leap year · leap-year February · quarter crossing a 31st month-end · single-day period · zero-day boundary (accrues <strong>0.00</strong>).</p>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 15 — Test Integrity & Correctness ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="shield-check"></i></span><h2>Test Integrity &amp; Correctness</h2></div>
+        <ul>
+          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> Results come from the <strong>real accrual path</strong> — no stubbing, mocking, hard-coding, or padding.</li>
+          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> The committed CSV is <strong>never</strong> modified, reordered, deleted, or extended; scenarios are <strong>never</strong> skipped or disabled.</li>
+          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> Verified via a Gherkin <strong>Scenario Outline</strong> + CSV-driven <strong>Cucumber step definitions</strong> + <strong>per-convention unit tests</strong> covering all six boundary cases.</li>
+          <li><span class="ico-primary"><i data-lucide="terminal"></i></span> Run with <code>./gradlew cucumber</code>; the project builds with <code>./gradlew build</code>.</li>
+        </ul>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+      <!-- ===== Slide 16 — Observability, Rollout & Scope ===== -->
+      <section>
+        <div class="wordmark">BLITZY<span class="dot">.</span></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="activity"></i></span><h2>Observability, Rollout &amp; Scope</h2></div>
+        <div class="grid-2">
+          <div class="card accent">
+            <h3><span class="ci"><i data-lucide="gauge"></i></span> Observability (reuse + add)</h3>
+            <p class="small"><strong>Reuses:</strong> SLF4J/Logback structured logging, MDC correlation IDs, Spring Boot Actuator + Micrometer Prometheus metrics, Grafana Tempo tracing, and provisioned Grafana dashboards.</p>
+            <p class="small"><strong>Adds:</strong> structured DEBUG/INFO logs at the calculators and the accrual change point, an optional Micrometer counter <code>fineract.accrual.daycount.computations</code> tagged by convention, and a new feature Grafana dashboard.</p>
+          </div>
+          <div class="card accent-mint">
+            <h3><span class="ci-mint"><i data-lucide="rocket"></i></span> Rollout &amp; risk</h3>
+            <p class="small"><strong>Zero-impact default</strong> (NULL = unchanged); <strong>opt-in per product</strong>.</p>
+            <p class="small"><strong>Out of scope:</strong> savings accrual, progressive-loan EMI accrual, repayment-schedule generation, UI/web-app, GL engine internals, and other 30/360 variants (Eurobond / ISDA / German / PSA).</p>
+          </div>
+        </div>
+        <p class="pointer"><span class="ico-primary"><i data-lucide="book-open"></i></span> Detailed decision rationale &amp; traceability matrix: see <code>docs/decisions/…</code>.</p>
+        <p style="text-align:center; margin-top:10px; font-size:30px; color:var(--blitzy-indigo-deep); font-weight:800;">Thank you. &nbsp; <span style="color:var(--blitzy-primary); letter-spacing:5px;">BLITZY<span style="color:#13B886;">.</span></span></p>
+        <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
+      </section>
+
+<!-- ====================== END SLIDES ====================== -->
+    </div>
+  </div>
+<!-- ====================== SCRIPTS BELOW ====================== -->
+  <!-- reveal.js core (UMD) and Lucide icons (UMD), both CDN-pinned. -->
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script type="module">
+    // Mermaid (ESM), CDN-pinned to 11.4.0.
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.esm.min.mjs';
+
+    // 1) Initialize Mermaid with brand-aligned theme variables (do not auto-start).
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'loose',
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#F2F0FE',          // existing-node fill (lavender)
+        primaryBorderColor: '#5B39F3',
+        primaryTextColor: '#1A105F',
+        lineColor: '#5B39F3',
+        fontFamily: "Inter, 'Segoe UI', system-ui, sans-serif"
+      },
+      // Use SVG <text> labels (htmlLabels:false), NOT HTML <foreignObject> labels.
+      // reveal.js scales every slide with a CSS transform, and Chrome mis-lays-out and
+      // clips <foreignObject> HTML inside a transformed SVG (labels collapse / overflow);
+      // SVG <text> is immune and scales cleanly with the viewBox. A wider wrappingWidth
+      // keeps the long, descriptive node-label lines from over-wrapping.
+      htmlLabels: false,
+      flowchart: { htmlLabels: false, wrappingWidth: 500 }
+    });
+
+    // 2) Render each .mermaid block BEFORE Reveal starts. We use the single-diagram
+    //    mermaid.render(id, source) API (which renders in a detached, definitely-sized
+    //    sandbox and returns an SVG string) instead of the batch mermaid.run(): run()
+    //    measures elements in the live DOM, and a flowchart with <br/> HTML labels can
+    //    hit degenerate label-positioning geometry there ("Could not find a suitable
+    //    point for the given distance"), which both throws and leaves the SVG inside
+    //    Mermaid's temporary wrapper (collapsing its size). render() avoids that and
+    //    lets us inject a clean SVG as a direct child of the .mermaid container so the
+    //    sizing CSS applies uniformly. Each render is guarded so one diagram can never
+    //    abort the others or prevent the deck (Reveal/Lucide) from initializing.
+    const mermaidBlocks = document.querySelectorAll('.mermaid');
+    let mermaidIndex = 0;
+    for (const block of mermaidBlocks) {
+      const source = block.textContent;                 // decoded source (entities -> <br/>)
+      try {
+        const { svg, bindFunctions } = await mermaid.render('blitzy-mermaid-' + (mermaidIndex++), source);
+        block.innerHTML = svg;                           // clean SVG as a direct child
+        if (typeof bindFunctions === 'function') { bindFunctions(block); }
+
+        // Post-process subgraph/cluster TITLES. Mermaid wraps the long, descriptive
+        // subgraph titles in diagram #1 to 2-3 lines whose lower lines fall on/below the
+        // cluster's top border and get clipped. For each multi-line title, shift its
+        // group straight up by (lines - 1) line-heights so the whole title sits cleanly
+        // above its box -- Mermaid's centring and per-line spacing are preserved exactly
+        // -- then grow the viewBox upward so a raised top-row title cannot clip at the
+        // SVG edge. This is a pure render-time adjustment; the Mermaid source is verbatim.
+        const svgEl = block.querySelector('svg');
+        if (svgEl) {
+          let maxShift = 0;
+          svgEl.querySelectorAll('.cluster-label, .clusterLabel').forEach(function (lbl) {
+            const textEl = lbl.querySelector('text');
+            if (!textEl) { return; }
+            const lines = Array.prototype.filter.call(textEl.children, function (n) {
+              return n.tagName && n.tagName.toLowerCase() === 'tspan';
+            });
+            if (lines.length <= 1) { return; }            // single-line titles are fine
+            const fontSize = parseFloat(getComputedStyle(textEl).fontSize) || 16;
+            const shift = (lines.length - 1) * 1.1 * fontSize;   // inter-line dy is 1.1em
+            if (shift > maxShift) { maxShift = shift; }
+            const tr = lbl.getAttribute('transform') || '';
+            const m = tr.match(/translate\(\s*([-\d.]+)[ ,]+([-\d.]+)\s*\)/);
+            if (m) {
+              const tx = parseFloat(m[1]);
+              const ty = parseFloat(m[2]) - shift;
+              lbl.setAttribute('transform', tr.replace(/translate\([^)]*\)/, 'translate(' + tx + ',' + ty + ')'));
+            }
+          });
+          if (maxShift > 0) {
+            const vb = (svgEl.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+            if (vb.length === 4 && vb.every(function (v) { return !Number.isNaN(v); })) {
+              const topPad = maxShift + 14;               // clearance above the raised titles
+              svgEl.setAttribute('viewBox', vb[0] + ' ' + (vb[1] - topPad) + ' ' + vb[2] + ' ' + (vb[3] + topPad));
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[deck] mermaid render reported a non-fatal issue:', e && (e.message || e));
+      }
+    }
+
+    // 3) Now initialize the deck at the mandated 1920x1080 canvas.
+    Reveal.initialize({
+      width: 1920,
+      height: 1080,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.0,
+      center: true,
+      hash: true,
+      controls: true,
+      progress: true,
+      slideNumber: 'c/t',
+      transition: 'slide'
+    });
+
+    // 4) Draw Lucide icons, and redraw after slide changes (icons added in new slides).
+    if (window.lucide) { window.lucide.createIcons(); }
+    Reveal.on('slidechanged', () => { if (window.lucide) { window.lucide.createIcons(); } });
+  </script>
+
+</body>
+</html>
