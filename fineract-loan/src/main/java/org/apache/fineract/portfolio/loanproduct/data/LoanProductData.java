@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.fineract.accounting.common.AccountingEnumerations;
 import org.apache.fineract.accounting.common.AccountingRuleType;
 import org.apache.fineract.accounting.glaccount.data.GLAccountData;
@@ -142,6 +143,7 @@ public class LoanProductData implements Serializable {
     private final EnumOptionData daysInMonthType;
     private final EnumOptionData daysInYearType;
     // [Day-Count Convention feature]
+    @Setter
     private Integer accrualDayCountConvention;
     private final boolean isInterestRecalculationEnabled;
     private final LoanProductInterestRecalculationData interestRecalculationData;

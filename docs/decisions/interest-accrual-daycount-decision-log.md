@@ -1,6 +1,14 @@
 # Interest Accrual Day-Count Convention — Decision Log
 
-This decision log records every non-trivial decision and deviation made while delivering the **Interest Accrual Day-Count Convention** feature, and it provides bidirectional traceability at 100% coverage between requirements, implementing files, and acceptance scenarios (Rule 1 — Explainability). The feature adds a configurable, per-loan-product day-count convention for accrued-interest computation, supporting exactly three conventions — **Actual/360**, **Actual/365 (Fixed)**, and **30/360 (US / bond basis)** — applied through the canonical formula `accrued_interest = principal × annual_rate × day_count_fraction`, with the result rounded HALF_UP to currency precision. Each convention differs only in how `day_count_fraction` is derived. The default behavior — when a product selects no convention — is byte-for-byte identical to today's accrual, because the configuration value is nullable and the accrual path is fully null-guarded. This file is the single source of truth for "why": all rationale is documented here and never embedded in code comments (existing-file edits carry only a terse `// [Day-Count Convention feature]` marker).
+This decision log records every non-trivial decision and deviation made while delivering the **Interest Accrual Day-Count Convention**
+feature, and it provides bidirectional traceability at 100% coverage between requirements, implementing files, and acceptance scenarios
+(Rule 1 — Explainability). The feature adds a configurable, per-loan-product day-count convention for accrued-interest computation,
+supporting exactly three conventions — **Actual/360**, **Actual/365 (Fixed)**, and **30/360 (US / bond basis)** — applied through the
+canonical formula `accrued_interest = principal × annual_rate × day_count_fraction`, with the result rounded HALF_UP to currency precision.
+Each convention differs only in how `day_count_fraction` is derived. The default behavior — when a product selects no convention — is
+byte-for-byte identical to today's accrual, because the configuration value is nullable and the accrual path is fully null-guarded. This
+file is the single source of truth for "why": all rationale is documented here and never embedded in code comments (existing-file edits
+carry only a terse `// [Day-Count Convention feature]` marker).
 
 ## Decision Log
 
@@ -16,8 +24,12 @@ This decision log records every non-trivial decision and deviation made while de
 | D8 | **30/360 US only**; do not implement Eurobond/ISDA/German/PSA variants | Implement multiple variants | Only three conventions are required; S4 dataset behavior confirms US bond basis | Future variants would need new enum constants; acceptable additive extension |
 | D9 | **E2E exercises the real production calculator** (CSV-driven), default Option B (test-scope `:fineract-core` dependency in `fineract-e2e-tests-core`) | (A) full server-driven loan flow; (C) internal calc endpoint via Feign | Deterministic, uses real code, matches the dataset's (inputs → output) contract; e2e-core otherwise only has the Feign client | Option B couples e2e-core to `fineract-core` at test scope; Option A remains the fuller end-to-end alternative if preferred |
 | D10 | **Create `InterestAccrualDayCount.feature`** (absent today) | Assume it exists | The feature file does not exist in the repository | Without it, no scenarios run; creating it is mandatory |
+| D11 | **`LoanProductData` exposes only the scalar `accrualDayCountConvention`; it intentionally OMITS an `accrualDayCountConventionOptions` dropdown list** | Add a template options list mirroring `daysInYearTypeOptions` | The scalar value satisfies R2 response exposure; an options/template list is a separate UI-template concern and this feature has no rendered UI (AAP §0.5.3). Honors minimal-change | A future UI needing a dropdown can add the options list additively; no current consumer requires it |
+| D12 | **Swagger documents `accrualDayCountConvention` on the CREATE request DTO (`PostLoanProductsRequest`) only** | Also annotate the PUT request and GET response Swagger DTOs | The field is optional/additive and the create example fully conveys the contract (codes 1/2/3). Functional behavior is wired across create (assembler), update (update util) and response (`LoanProductData`); Swagger annotation breadth is documentation-only and kept minimal | Slightly narrower Swagger coverage; serialized behavior is unaffected and annotations can be extended additively |
+| D13 | **Retain wide source lines where wrapping would lose content, break syntax, or diverge from repository convention:** the consolidated decision/traceability Markdown tables, the migration `xsi:schemaLocation` line, and the Grafana `expr` query strings | Force every source line ≤140 by restructuring tables, wrapping the schemaLocation attribute, or embedding `\n` in queries | (a) Markdown table rows are single-line by syntax — preserving full content and the AAP §0.7.2 consolidated-table format (Rule 1) takes precedence; (b) the migration schemaLocation matches the universal repo convention (223/236 tenant changelog parts use the identical 148-char line) so wrapping only this file would be inconsistent; (c) JSON has no line-continuation and embedding newlines in PromQL/LogQL `expr` would change the queries (explicitly forbidden by the finding). The 140-char limit is a review heuristic, not a build gate (checkstyle defers LineLength to Spotless, which does not wrap md/xml/json) | A few source lines exceed the heuristic; rendering and semantics are unaffected and content is fully preserved |
 
-> Any further deviations discovered during implementation MUST be appended to this table as new explicit rows (e.g., D11, D12, …). This decision log is the single source of truth for "why"; rationale must never be placed in code comments.
+> Any further deviations discovered during implementation MUST be appended to this table as new explicit rows (e.g., D11, D12, …). This
+> decision log is the single source of truth for "why"; rationale must never be placed in code comments.
 
 ## Traceability — Requirements → Implementing Files
 
@@ -40,11 +52,15 @@ This decision log records every non-trivial decision and deviation made while de
 | **S5** Single-day period | Minimal 1-day accrual | Actual/360 (101.39 for principal 1000000 @ 3.65%), Actual/365, 30/360 |
 | **S6** Zero-day boundary | `start == end` ⇒ accrue 0.00 with no divide-by-zero | Actual/360, Actual/365, 30/360 (all 0.00) |
 
-> The dataset is 18 rows (6 scenarios × 3 conventions). The ONLY asserted output is `expected_accrued_interest`; all other CSV columns (`day_count_days`, `day_count_fraction`, `notes`, etc.) are reference-only and MUST NOT be asserted. The committed CSV at `fineract-e2e-tests-runner/src/test/resources/features/InterestAccrualDayCount.csv` is READ-ONLY and must NEVER be modified, reordered, deleted, or extended.
+> The dataset is 18 rows (6 scenarios × 3 conventions). The ONLY asserted output is `expected_accrued_interest`; all other CSV columns
+> (`day_count_days`, `day_count_fraction`, `notes`, etc.) are reference-only and MUST NOT be asserted. The committed CSV at
+> `fineract-e2e-tests-runner/src/test/resources/features/InterestAccrualDayCount.csv` is READ-ONLY and must NEVER be modified, reordered,
+> deleted, or extended.
 
 ## Observability — Reused vs Added (Rule 3)
 
-Observability ships with the feature by reusing Fineract's existing tooling and adding only feature-specific, additive signals. The reused-versus-added split is recorded below.
+Observability ships with the feature by reusing Fineract's existing tooling and adding only feature-specific, additive signals. The
+reused-versus-added split is recorded below.
 
 ### Reused (verified present)
 
@@ -52,16 +68,26 @@ Observability ships with the feature by reusing Fineract's existing tooling and 
 - MDC-based correlation IDs via `CorrelationHeaderFilter` + `MDCWrapper`.
 - Spring Boot Actuator + Micrometer Prometheus metrics at `/fineract-provider/actuator/prometheus`.
 - Grafana Tempo distributed tracing.
-- Provisioned Grafana dashboards `config/docker/grafana/dashboards/fineract-spring-boot.json` and `fineract-loki.json`, with datasources `config/docker/grafana/datasources/datasource.yml`.
+- Provisioned Grafana dashboards `config/docker/grafana/dashboards/fineract-spring-boot.json` and `fineract-loki.json`, with datasources
+  `config/docker/grafana/datasources/datasource.yml`.
 - Local observability stack `config/docker/compose/observability.yml` (Loki 2.9.2, Prometheus v2.47.2, Grafana 10.2.0, Tempo 2.2.4).
 - Actuator health/readiness endpoints.
 
 ### Added (feature-specific, additive)
 
-- Structured DEBUG/INFO log lines in the new calculators and at the single accrual change point, emitting convention, period start/end, day-count days, day-count fraction, principal, annual rate, computed accrued amount, and loan id — automatically correlated by the existing MDC.
-- An optional Micrometer counter/timer `fineract.accrual.daycount.computations` tagged by convention, surfaced on the existing Prometheus endpoint.
-- A new Grafana dashboard template `config/docker/grafana/dashboards/fineract-interest-accrual-daycount.json` reusing the existing datasources.
+- Structured DEBUG/INFO log lines in the new calculators and at the single accrual change point, emitting convention, period start/end,
+  day-count days, day-count fraction, principal, annual rate, computed accrued amount, and loan id — automatically correlated by the
+  existing MDC.
+- An optional Micrometer counter/timer `fineract.accrual.daycount.computations` tagged by convention, surfaced on the existing Prometheus
+  endpoint.
+- A new Grafana dashboard template `config/docker/grafana/dashboards/fineract-interest-accrual-daycount.json` reusing the existing
+  datasources.
 
 ## 30/360 US Day-Count Rule (Context)
 
-This grounding context supports decisions D6 and D8 and the S4 acceptance boundary; it is descriptive only. The 30/360 US (bond basis) day count is `360·(Y2−Y1) + 30·(M2−M1) + (D2−D1)`, divided by 360 for the fraction. Month-end adjustments are applied in order: if `D1 = 31` then `D1 → 30`; then if `D2 = 31` **and** `D1 ∈ {30, 31}` then `D2 → 30`. Crucially, an end day of 31 is **not** adjusted when the start day is neither 30 nor 31 — which is exactly the S4 behavior (`2025-01-01 → 2025-03-31` ⇒ 90 days, fraction 0.25). The two actual conventions are simpler: **Actual/360** divides the actual elapsed days by 360, and **Actual/365 (Fixed)** divides the actual elapsed days by a fixed 365 denominator. All three guard the zero-day boundary (`start == end ⇒ fraction 0`, accrued `0.00`) so there is no divide-by-zero.
+This grounding context supports decisions D6 and D8 and the S4 acceptance boundary; it is descriptive only. The 30/360 US (bond basis) day
+count is `360·(Y2−Y1) + 30·(M2−M1) + (D2−D1)`, divided by 360 for the fraction. Month-end adjustments are applied in order: if `D1 = 31`
+then `D1 → 30`; then if `D2 = 31` **and** `D1 ∈ {30, 31}` then `D2 → 30`. Crucially, an end day of 31 is **not** adjusted when the start day
+is neither 30 nor 31 — which is exactly the S4 behavior (`2025-01-01 → 2025-03-31` ⇒ 90 days, fraction 0.25). The two actual conventions are
+simpler: **Actual/360** divides the actual elapsed days by 360, and **Actual/365 (Fixed)** divides the actual elapsed days by a fixed 365
+denominator. All three guard the zero-day boundary (`start == end ⇒ fraction 0`, accrued `0.00`) so there is no divide-by-zero.

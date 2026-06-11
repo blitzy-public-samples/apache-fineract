@@ -23,9 +23,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configurable Day-Count Convention for Accrued Interest — Apache Fineract</title>
 
-  <!-- To verify: open this file in a modern browser with internet access; all 16 slides and all 3 Mermaid diagrams must render using reveal.js 5.1.0, Mermaid 11.4.0, Lucide 0.460.0. Use arrow keys / Space to navigate; press 'o' for overview. -->
+  <!-- To verify: open this file in a modern browser with internet access; all 16 slides and all 3 Mermaid diagrams must render using
+    reveal.js 5.1.0, Mermaid 11.4.0, Lucide 0.460.0. Use arrow keys / Space to navigate; press 'o' for overview. -->
 
-  <!-- reveal.js BASE stylesheets ONLY (pinned 5.1.0). The Blitzy brand theme is defined inline below; no external theme or web-font is referenced. -->
+  <!-- reveal.js BASE stylesheets ONLY (pinned 5.1.0). The Blitzy brand theme is defined inline below; no external theme or web-font is
+    referenced. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 
@@ -221,9 +223,11 @@
         <div class="slide-head"><span class="hicon"><i data-lucide="clipboard-list"></i></span><h2>Executive Summary</h2></div>
         <ul>
           <li>Loan products can now <strong>select how the day-count fraction</strong> for accrued interest is derived.</li>
-          <li>Three conventions supported: <strong>Actual/360</strong>, <strong>Actual/365 (Fixed)</strong>, and <strong>30/360 US</strong>.</li>
+          <li>Three conventions supported: <strong>Actual/360</strong>, <strong>Actual/365 (Fixed)</strong>, and <strong>30/360
+            US</strong>.</li>
           <li>Fully <em>additive &amp; backward-compatible</em> — products that don't opt in behave <strong>exactly as today</strong>.</li>
-          <li>Correctness proven against an <strong>18-row committed acceptance dataset</strong>, exercised through the <em>real accrual path</em>.</li>
+          <li>Correctness proven against an <strong>18-row committed acceptance dataset</strong>, exercised through the <em>real accrual
+            path</em>.</li>
         </ul>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
@@ -237,7 +241,8 @@
           <li>An incorrect day-count fraction flows <strong>straight into General Ledger postings</strong>…</li>
           <li>…which <em>breaks reconciliation</em> — a material, institution-grade correctness risk.</li>
         </ul>
-        <div class="note warn"><strong>Business need:</strong> calculation <strong>correctness</strong> &amp; per-product <strong>configurability</strong>.</div>
+        <div class="note warn"><strong>Business need:</strong> calculation <strong>correctness</strong> &amp; per-product
+          <strong>configurability</strong>.</div>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
 
@@ -246,7 +251,8 @@
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
         <div class="slide-head"><span class="hicon"><i data-lucide="lightbulb"></i></span><h2>The Solution at a Glance</h2></div>
         <ul>
-          <li>A <strong>per-loan-product selectable convention</strong> that reaches the accrual calculation <strong>at run time</strong>.</li>
+          <li>A <strong>per-loan-product selectable convention</strong> that reaches the accrual calculation <strong>at run
+            time</strong>.</li>
           <li>Isolated <strong>new calculators</strong> plus <strong>one</strong> minimal, null-guarded change at the accrual point.</li>
           <li>The existing <strong>General Ledger posting is reused unchanged</strong>.</li>
         </ul>
@@ -258,10 +264,13 @@
       <section>
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
         <div class="slide-head"><span class="hicon"><i data-lucide="sigma"></i></span><h2>The Canonical Formula</h2></div>
-        <div class="formula center-block">accrued_interest = <span class="v-prin">principal</span> × <span class="v-rate">annual_rate</span> × <span class="v-frac">day_count_fraction</span></div>
+        <div class="formula center-block">accrued_interest = <span class="v-prin">principal</span> × <span class="v-rate">annual_rate</span>
+          × <span class="v-frac">day_count_fraction</span></div>
         <ul>
-          <li>The amount is rounded <strong>HALF_UP to currency precision (2 dp)</strong>, reusing Fineract's <code>Money</code> / <code>MoneyHelper</code> semantics.</li>
-          <li><strong>Zero-day safety:</strong> when <code>start == end</code>, the fraction = 0 and accrued = <code>0.00</code> (no divide-by-zero).</li>
+          <li>The amount is rounded <strong>HALF_UP to currency precision (2 dp)</strong>, reusing Fineract's <code>Money</code> /
+            <code>MoneyHelper</code> semantics.</li>
+          <li><strong>Zero-day safety:</strong> when <code>start == end</code>, the fraction = 0 and accrued = <code>0.00</code> (no
+            divide-by-zero).</li>
         </ul>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
@@ -295,10 +304,13 @@
       <section>
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
         <div class="slide-head"><span class="hicon"><i data-lucide="calendar-days"></i></span><h2>30/360 US — the month-end rules</h2></div>
-        <div class="formula center-block" style="font-size:32px;">days = 360·(Y2−Y1) + 30·(M2−M1) + (D2−D1)&nbsp;&nbsp;&nbsp;then ÷ 360</div>
+        <div class="formula center-block" style="font-size:32px;">days = 360·(Y2−Y1) + 30·(M2−M1) + (D2−D1)&nbsp;&nbsp;&nbsp;then ÷
+          360</div>
         <ul>
-          <li><strong>Adjustment order:</strong> if <code>D1 = 31</code> then <code>D1 → 30</code>; then if <code>D2 = 31</code> <strong>and</strong> <code>D1 ∈ {30, 31}</code> then <code>D2 → 30</code>.</li>
-          <li><strong>Key behavior:</strong> end-day 31 is <em>not</em> adjusted when the start day is not 30/31 — which is why scenario <strong>S4</strong> (<code>2025-01-01 → 2025-03-31</code>) yields <strong>90 days</strong>.</li>
+          <li><strong>Adjustment order:</strong> if <code>D1 = 31</code> then <code>D1 → 30</code>; then if <code>D2 = 31</code>
+            <strong>and</strong> <code>D1 ∈ {30, 31}</code> then <code>D2 → 30</code>.</li>
+          <li><strong>Key behavior:</strong> end-day 31 is <em>not</em> adjusted when the start day is not 30/31 — which is why scenario
+            <strong>S4</strong> (<code>2025-01-01 → 2025-03-31</code>) yields <strong>90 days</strong>.</li>
         </ul>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
@@ -307,7 +319,8 @@
       <!-- ===== Slide 8 — Mermaid #1: Feature Component Interaction ===== -->
       <section>
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
-        <div class="slide-head"><span class="hicon"><i data-lucide="network"></i></span><h2>Architecture — Feature Component Interaction</h2></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="network"></i></span><h2>Architecture — Feature Component
+          Interaction</h2></div>
         <div class="mermaid">
 graph TD
     subgraph Config["Loan Product Configuration (additive, optional)"]
@@ -342,7 +355,8 @@ graph TD
         <div class="legend">
           <b>Feature Component Interaction — target state.</b>
           <span class="swatch swatch-mint"></span><b>mint</b> = NEW isolated components &nbsp;·&nbsp;
-          <span class="swatch swatch-lav"></span><b>lavender</b> = EXISTING Fineract components (the GL group is reused entirely unchanged) &nbsp;·&nbsp;
+          <span class="swatch swatch-lav"></span><b>lavender</b> = EXISTING Fineract components (the GL group is reused entirely unchanged)
+            &nbsp;·&nbsp;
           solid arrow = call / data flow &nbsp;·&nbsp; dotted arrow = configuration value read at accrual time.
         </div>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
@@ -351,7 +365,8 @@ graph TD
       <!-- ===== Slide 9 — Mermaid #2: Accrual Data Flow ===== -->
       <section>
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
-        <div class="slide-head"><span class="hicon"><i data-lucide="workflow"></i></span><h2>Accrual Data Flow — with the convention branch</h2></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="workflow"></i></span><h2>Accrual Data Flow — with the convention
+          branch</h2></div>
         <div class="mermaid">
 flowchart TD
     START([COB / accrual trigger]) --> SVC["LoanAccrualsProcessingServiceImpl.addInterestAccrual"]
@@ -383,7 +398,8 @@ flowchart TD
       <!-- ===== Slide 10 — Mermaid #3: Configuration Command Pipeline ===== -->
       <section>
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
-        <div class="slide-head"><span class="hicon"><i data-lucide="route"></i></span><h2>Loan-Product Configuration Command Pipeline</h2></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="route"></i></span><h2>Loan-Product Configuration Command
+          Pipeline</h2></div>
         <div class="mermaid">
 sequenceDiagram
     autonumber
@@ -422,15 +438,18 @@ sequenceDiagram
         <div class="grid-2">
           <div class="card accent-mint">
             <h3><span class="ci-mint"><i data-lucide="puzzle"></i></span> Additive &amp; backward-compatible</h3>
-            <p>One <strong>optional</strong> JSON field <code>accrualDayCountConvention</code>; a nullable DB column; <strong>NULL = today's behavior byte-for-byte</strong> (no silent change).</p>
+            <p>One <strong>optional</strong> JSON field <code>accrualDayCountConvention</code>; a nullable DB column; <strong>NULL = today's
+              behavior byte-for-byte</strong> (no silent change).</p>
           </div>
           <div class="card accent">
             <h3><span class="ci"><i data-lucide="scissors"></i></span> Minimal change &amp; isolation</h3>
-            <p>New logic in dedicated files; exactly <strong>one</strong> production method behaviorally changed; every edit to an existing file tagged <code>// [Day-Count Convention feature]</code>.</p>
+            <p>New logic in dedicated files; exactly <strong>one</strong> production method behaviorally changed; every edit to an existing
+              file tagged <code>// [Day-Count Convention feature]</code>.</p>
           </div>
           <div class="card accent">
             <h3><span class="ci"><i data-lucide="recycle"></i></span> Reuse, don't reinvent</h3>
-            <p>Reuse <code>Money</code>/<code>MoneyHelper</code> rounding, <code>DateUtils</code>, the existing accrual engine and GL engine. <strong>No parallel engine, no new numeric approach, no new third-party dependency.</strong></p>
+            <p>Reuse <code>Money</code>/<code>MoneyHelper</code> rounding, <code>DateUtils</code>, the existing accrual engine and GL
+              engine. <strong>No parallel engine, no new numeric approach, no new third-party dependency.</strong></p>
           </div>
           <div class="card accent-mint">
             <h3><span class="ci-mint"><i data-lucide="shield-check"></i></span> Safety</h3>
@@ -443,12 +462,22 @@ sequenceDiagram
       <!-- ===== Slide 12 — Key Components: New vs. Extended vs. Reused ===== -->
       <section class="pad-tight">
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
-        <div class="slide-head"><span class="hicon"><i data-lucide="layers"></i></span><h2>Key Components — New vs. Extended vs. Reused</h2></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="layers"></i></span><h2>Key Components — New vs. Extended vs.
+          Reused</h2></div>
         <ul style="list-style:none; margin-left:0;">
-          <li><span class="badge badge-new">NEW</span> &nbsp;<strong>Isolated in <code>fineract-core</code>:</strong> <code>DayCountConvention</code> enum (<code>ACTUAL_360=1</code>, <code>ACTUAL_365=2</code>, <code>THIRTY_360_US=3</code>; <code>fromInt</code> returns null for null = backward-compatible) + <code>DayCountConventionCalculator</code> strategy interface + three calculators (Actual360, Actual365, Thirty360Us) + optional factory.</li>
-          <li style="margin-top:0.5em;"><span class="badge badge-ext">EXTENDED</span> &nbsp;<strong>Additive config:</strong> <code>LoanProductRelatedDetail</code> (+ nullable <code>accrual_day_count_convention</code> column), <code>LoanProductConstants</code>, <code>LoanProductDataValidator</code> (validate 1/2/3, optional), <code>LoanProductAssembler</code>, <code>LoanProductData</code>, <code>LoanProductsApiResourceSwagger</code>; new Liquibase migration part <code>0236</code> registered in <code>changelog-tenant.xml</code>.</li>
-          <li style="margin-top:0.5em;"><span class="badge badge-ext">1 CHANGE</span> &nbsp;<strong>Single behavioral change:</strong> <code>AbstractCumulativeLoanScheduleGenerator.getPeriodInterestTillDate</code> (a null-guarded branch).</li>
-          <li style="margin-top:0.5em;"><span class="badge badge-reuse">REUSED</span> &nbsp;<strong>Unchanged GL posting:</strong> <code>AccrualBasedAccountingProcessorForLoan</code>, <code>LoanJournalEntryPoster</code>.</li>
+          <li><span class="badge badge-new">NEW</span> &nbsp;<strong>Isolated in <code>fineract-core</code>:</strong>
+            <code>DayCountConvention</code> enum (<code>ACTUAL_360=1</code>, <code>ACTUAL_365=2</code>, <code>THIRTY_360_US=3</code>;
+            <code>fromInt</code> returns null for null = backward-compatible) + <code>DayCountConventionCalculator</code> strategy interface
+            + three calculators (Actual360, Actual365, Thirty360Us) + optional factory.</li>
+          <li style="margin-top:0.5em;"><span class="badge badge-ext">EXTENDED</span> &nbsp;<strong>Additive config:</strong>
+            <code>LoanProductRelatedDetail</code> (+ nullable <code>accrual_day_count_convention</code> column),
+            <code>LoanProductConstants</code>, <code>LoanProductDataValidator</code> (validate 1/2/3, optional),
+            <code>LoanProductAssembler</code>, <code>LoanProductData</code>, <code>LoanProductsApiResourceSwagger</code>; new Liquibase
+            migration part <code>0236</code> registered in <code>changelog-tenant.xml</code>.</li>
+          <li style="margin-top:0.5em;"><span class="badge badge-ext">1 CHANGE</span> &nbsp;<strong>Single behavioral change:</strong>
+            <code>AbstractCumulativeLoanScheduleGenerator.getPeriodInterestTillDate</code> (a null-guarded branch).</li>
+          <li style="margin-top:0.5em;"><span class="badge badge-reuse">REUSED</span> &nbsp;<strong>Unchanged GL posting:</strong>
+            <code>AccrualBasedAccountingProcessorForLoan</code>, <code>LoanJournalEntryPoster</code>.</li>
         </ul>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
@@ -456,7 +485,8 @@ sequenceDiagram
       <!-- ===== Slide 13 — The Single Change Point + GL Reuse ===== -->
       <section>
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
-        <div class="slide-head"><span class="hicon"><i data-lucide="pencil-ruler"></i></span><h2>The Single Change Point + GL Reuse</h2></div>
+        <div class="slide-head"><span class="hicon"><i data-lucide="pencil-ruler"></i></span><h2>The Single Change Point + GL
+          Reuse</h2></div>
         <div class="grid-2">
           <div class="card">
             <h3><span class="badge badge-reuse">BEFORE</span> &nbsp;Actual days only</h3>
@@ -465,10 +495,12 @@ sequenceDiagram
           </div>
           <div class="card accent-mint">
             <h3><span class="badge badge-new">AFTER</span> &nbsp;Convention-aware</h3>
-            <p>When a convention <strong>is set</strong>, the day-count fraction comes from the <strong>calculator</strong>; when it is <strong>null</strong>, the existing actual-day path runs <strong>unchanged</strong>.</p>
+            <p>When a convention <strong>is set</strong>, the day-count fraction comes from the <strong>calculator</strong>; when it is
+              <strong>null</strong>, the existing actual-day path runs <strong>unchanged</strong>.</p>
           </div>
         </div>
-        <div class="note">The corrected <code>Money</code> amount then flows through the <strong>existing</strong> journal-entry mechanics — the General Ledger, chart of accounts, and double-entry engine are <strong>untouched</strong>.</div>
+        <div class="note">The corrected <code>Money</code> amount then flows through the <strong>existing</strong> journal-entry mechanics —
+          the General Ledger, chart of accounts, and double-entry engine are <strong>untouched</strong>.</div>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
 
@@ -477,33 +509,73 @@ sequenceDiagram
       <section class="pad-tight">
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
         <div class="slide-head"><span class="hicon"><i data-lucide="table"></i></span><h2>Acceptance Dataset — Definition of Done</h2></div>
-        <p class="small muted" style="margin:0 0 6px 0;"><strong>18 rows = 6 scenarios × 3 conventions</strong> · read-only file <code>fineract-e2e-tests-runner/src/test/resources/features/InterestAccrualDayCount.csv</code> · the asserted output is <strong>Expected Accrued</strong>.</p>
+        <p class="small muted" style="margin:0 0 6px 0;"><strong>18 rows = 6 scenarios × 3 conventions</strong> · read-only file
+          <code>fineract-e2e-tests-runner/src/test/resources/features/InterestAccrualDayCount.csv</code> · the asserted output is
+          <strong>Expected Accrued</strong>.</p>
         <table class="dataset">
           <thead>
-            <tr><th>Test ID</th><th>Scenario</th><th>Principal</th><th>Rate %</th><th>Convention</th><th>Start</th><th>End</th><th>Days</th><th>Fraction</th><th>Expected Accrued</th></tr>
+            <tr><th>Test ID</th><th>Scenario</th><th>Principal</th><th>Rate
+              %</th><th>Convention</th><th>Start</th><th>End</th><th>Days</th><th>Fraction</th><th>Expected Accrued</th></tr>
           </thead>
           <tbody>
-            <tr><td>S1-Actual_360</td><td>Base one-month period</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">31</td><td class="num">0.08611111</td><td class="exp">430.56</td></tr>
-            <tr><td>S1-Actual_365</td><td>Base one-month period</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">31</td><td class="num">0.08493150</td><td class="exp">424.66</td></tr>
-            <tr><td>S1-30_360</td><td>Base one-month period</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">30</td><td class="num">0.08333333</td><td class="exp">416.67</td></tr>
-            <tr><td>S2-Actual_360</td><td>Full non-leap year</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">365</td><td class="num">1.01388888</td><td class="exp">5069.44</td></tr>
-            <tr><td>S2-Actual_365</td><td>Full non-leap year</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">365</td><td class="num">1</td><td class="exp">5000.00</td></tr>
-            <tr><td>S2-30_360</td><td>Full non-leap year</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">360</td><td class="num">1</td><td class="exp">5000.00</td></tr>
-            <tr><td>S3-Actual_360</td><td>Leap-year February</td><td class="num">250000</td><td class="num">4.25</td><td>Actual/360</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">29</td><td class="num">0.08055555</td><td class="exp">855.90</td></tr>
-            <tr><td>S3-Actual_365</td><td>Leap-year February</td><td class="num">250000</td><td class="num">4.25</td><td>Actual/365</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">29</td><td class="num">0.07945205</td><td class="exp">844.18</td></tr>
-            <tr><td>S3-30_360</td><td>Leap-year February</td><td class="num">250000</td><td class="num">4.25</td><td>30/360</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">30</td><td class="num">0.08333333</td><td class="exp">885.42</td></tr>
-            <tr><td>S4-Actual_360</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-03-31</td><td class="num">89</td><td class="num">0.24722222</td><td class="exp">1236.11</td></tr>
-            <tr><td>S4-Actual_365</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-03-31</td><td class="num">89</td><td class="num">0.24383561</td><td class="exp">1219.18</td></tr>
-            <tr><td>S4-30_360</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-03-31</td><td class="num hl">90</td><td class="num">0.25</td><td class="exp">1250.00</td></tr>
-            <tr><td>S5-Actual_360</td><td>Single-day period</td><td class="num">1000000</td><td class="num">3.65</td><td>Actual/360</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td class="num">0.00277777</td><td class="exp">101.39</td></tr>
-            <tr><td>S5-Actual_365</td><td>Single-day period</td><td class="num">1000000</td><td class="num">3.65</td><td>Actual/365</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td class="num">0.00273972</td><td class="exp">100.00</td></tr>
-            <tr><td>S5-30_360</td><td>Single-day period</td><td class="num">1000000</td><td class="num">3.65</td><td>30/360</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td class="num">0.00277777</td><td class="exp">101.39</td></tr>
-            <tr><td>S6-Actual_360</td><td>Zero-day boundary</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td class="exp hl">0.00</td></tr>
-            <tr><td>S6-Actual_365</td><td>Zero-day boundary</td><td class="num">100000</td><td class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td class="exp hl">0.00</td></tr>
-            <tr><td>S6-30_360</td><td>Zero-day boundary</td><td class="num">100000</td><td class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td class="exp hl">0.00</td></tr>
+            <tr><td>S1-Actual_360</td><td>Base one-month period</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">31</td><td
+              class="num">0.08611111</td><td class="exp">430.56</td></tr>
+            <tr><td>S1-Actual_365</td><td>Base one-month period</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">31</td><td
+              class="num">0.08493150</td><td class="exp">424.66</td></tr>
+            <tr><td>S1-30_360</td><td>Base one-month period</td><td class="num">100000</td><td
+              class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-02-01</td><td class="num">30</td><td
+              class="num">0.08333333</td><td class="exp">416.67</td></tr>
+            <tr><td>S2-Actual_360</td><td>Full non-leap year</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">365</td><td
+              class="num">1.01388888</td><td class="exp">5069.44</td></tr>
+            <tr><td>S2-Actual_365</td><td>Full non-leap year</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">365</td><td class="num">1</td><td
+              class="exp">5000.00</td></tr>
+            <tr><td>S2-30_360</td><td>Full non-leap year</td><td class="num">100000</td><td
+              class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2026-01-01</td><td class="num">360</td><td class="num">1</td><td
+              class="exp">5000.00</td></tr>
+            <tr><td>S3-Actual_360</td><td>Leap-year February</td><td class="num">250000</td><td
+              class="num">4.25</td><td>Actual/360</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">29</td><td
+              class="num">0.08055555</td><td class="exp">855.90</td></tr>
+            <tr><td>S3-Actual_365</td><td>Leap-year February</td><td class="num">250000</td><td
+              class="num">4.25</td><td>Actual/365</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">29</td><td
+              class="num">0.07945205</td><td class="exp">844.18</td></tr>
+            <tr><td>S3-30_360</td><td>Leap-year February</td><td class="num">250000</td><td
+              class="num">4.25</td><td>30/360</td><td>2024-02-01</td><td>2024-03-01</td><td class="num">30</td><td
+              class="num">0.08333333</td><td class="exp">885.42</td></tr>
+            <tr><td>S4-Actual_360</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-03-31</td><td class="num">89</td><td
+              class="num">0.24722222</td><td class="exp">1236.11</td></tr>
+            <tr><td>S4-Actual_365</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-03-31</td><td class="num">89</td><td
+              class="num">0.24383561</td><td class="exp">1219.18</td></tr>
+            <tr><td>S4-30_360</td><td>Quarter crossing a 31st month-end</td><td class="num">100000</td><td
+              class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-03-31</td><td class="num hl">90</td><td
+              class="num">0.25</td><td class="exp">1250.00</td></tr>
+            <tr><td>S5-Actual_360</td><td>Single-day period</td><td class="num">1000000</td><td
+              class="num">3.65</td><td>Actual/360</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td
+              class="num">0.00277777</td><td class="exp">101.39</td></tr>
+            <tr><td>S5-Actual_365</td><td>Single-day period</td><td class="num">1000000</td><td
+              class="num">3.65</td><td>Actual/365</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td
+              class="num">0.00273972</td><td class="exp">100.00</td></tr>
+            <tr><td>S5-30_360</td><td>Single-day period</td><td class="num">1000000</td><td
+              class="num">3.65</td><td>30/360</td><td>2025-06-01</td><td>2025-06-02</td><td class="num">1</td><td
+              class="num">0.00277777</td><td class="exp">101.39</td></tr>
+            <tr><td>S6-Actual_360</td><td>Zero-day boundary</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/360</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td
+              class="exp hl">0.00</td></tr>
+            <tr><td>S6-Actual_365</td><td>Zero-day boundary</td><td class="num">100000</td><td
+              class="num">5.0</td><td>Actual/365</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td
+              class="exp hl">0.00</td></tr>
+            <tr><td>S6-30_360</td><td>Zero-day boundary</td><td class="num">100000</td><td
+              class="num">5.0</td><td>30/360</td><td>2025-01-01</td><td>2025-01-01</td><td class="num">0</td><td class="num">0</td><td
+              class="exp hl">0.00</td></tr>
           </tbody>
         </table>
-        <p class="small muted" style="margin-top:6px;">Boundaries: base one-month · full non-leap year · leap-year February · quarter crossing a 31st month-end · single-day period · zero-day boundary (accrues <strong>0.00</strong>).</p>
+        <p class="small muted" style="margin-top:6px;">Boundaries: base one-month · full non-leap year · leap-year February · quarter
+          crossing a 31st month-end · single-day period · zero-day boundary (accrues <strong>0.00</strong>).</p>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
 
@@ -512,10 +584,15 @@ sequenceDiagram
         <div class="wordmark">BLITZY<span class="dot">.</span></div>
         <div class="slide-head"><span class="hicon"><i data-lucide="shield-check"></i></span><h2>Test Integrity &amp; Correctness</h2></div>
         <ul>
-          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> Results come from the <strong>real accrual path</strong> — no stubbing, mocking, hard-coding, or padding.</li>
-          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> The committed CSV is <strong>never</strong> modified, reordered, deleted, or extended; scenarios are <strong>never</strong> skipped or disabled.</li>
-          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> Verified via a Gherkin <strong>Scenario Outline</strong> + CSV-driven <strong>Cucumber step definitions</strong> + <strong>per-convention unit tests</strong> covering all six boundary cases.</li>
-          <li><span class="ico-primary"><i data-lucide="terminal"></i></span> Run with <code>./gradlew cucumber</code>; the project builds with <code>./gradlew build</code>.</li>
+          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> Results come from the <strong>real accrual path</strong> — no
+            stubbing, mocking, hard-coding, or padding.</li>
+          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> The committed CSV is <strong>never</strong> modified,
+            reordered, deleted, or extended; scenarios are <strong>never</strong> skipped or disabled.</li>
+          <li><span class="ico-mint"><i data-lucide="check-check"></i></span> Verified via a Gherkin <strong>Scenario Outline</strong> +
+            CSV-driven <strong>Cucumber step definitions</strong> + <strong>per-convention unit tests</strong> covering all six boundary
+            cases.</li>
+          <li><span class="ico-primary"><i data-lucide="terminal"></i></span> Run with <code>./gradlew cucumber</code>; the project builds
+            with <code>./gradlew build</code>.</li>
         </ul>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
@@ -527,17 +604,23 @@ sequenceDiagram
         <div class="grid-2">
           <div class="card accent">
             <h3><span class="ci"><i data-lucide="gauge"></i></span> Observability (reuse + add)</h3>
-            <p class="small"><strong>Reuses:</strong> SLF4J/Logback structured logging, MDC correlation IDs, Spring Boot Actuator + Micrometer Prometheus metrics, Grafana Tempo tracing, and provisioned Grafana dashboards.</p>
-            <p class="small"><strong>Adds:</strong> structured DEBUG/INFO logs at the calculators and the accrual change point, an optional Micrometer counter <code>fineract.accrual.daycount.computations</code> tagged by convention, and a new feature Grafana dashboard.</p>
+            <p class="small"><strong>Reuses:</strong> SLF4J/Logback structured logging, MDC correlation IDs, Spring Boot Actuator +
+              Micrometer Prometheus metrics, Grafana Tempo tracing, and provisioned Grafana dashboards.</p>
+            <p class="small"><strong>Adds:</strong> structured DEBUG/INFO logs at the calculators and the accrual change point, an optional
+              Micrometer counter <code>fineract.accrual.daycount.computations</code> tagged by convention, and a new feature Grafana
+              dashboard.</p>
           </div>
           <div class="card accent-mint">
             <h3><span class="ci-mint"><i data-lucide="rocket"></i></span> Rollout &amp; risk</h3>
             <p class="small"><strong>Zero-impact default</strong> (NULL = unchanged); <strong>opt-in per product</strong>.</p>
-            <p class="small"><strong>Out of scope:</strong> savings accrual, progressive-loan EMI accrual, repayment-schedule generation, UI/web-app, GL engine internals, and other 30/360 variants (Eurobond / ISDA / German / PSA).</p>
+            <p class="small"><strong>Out of scope:</strong> savings accrual, progressive-loan EMI accrual, repayment-schedule generation,
+              UI/web-app, GL engine internals, and other 30/360 variants (Eurobond / ISDA / German / PSA).</p>
           </div>
         </div>
-        <p class="pointer"><span class="ico-primary"><i data-lucide="book-open"></i></span> Detailed decision rationale &amp; traceability matrix: see <code>docs/decisions/…</code>.</p>
-        <p style="text-align:center; margin-top:10px; font-size:30px; color:var(--blitzy-indigo-deep); font-weight:800;">Thank you. &nbsp; <span style="color:var(--blitzy-primary); letter-spacing:5px;">BLITZY<span style="color:#13B886;">.</span></span></p>
+        <p class="pointer"><span class="ico-primary"><i data-lucide="book-open"></i></span> Detailed decision rationale &amp; traceability
+          matrix: see <code>docs/decisions/…</code>.</p>
+        <p style="text-align:center; margin-top:10px; font-size:30px; color:var(--blitzy-indigo-deep); font-weight:800;">Thank you. &nbsp;
+          <span style="color:var(--blitzy-primary); letter-spacing:5px;">BLITZY<span style="color:#13B886;">.</span></span></p>
         <div class="slide-footer">Configurable Day-Count Convention for Accrued Interest · Apache Fineract</div>
       </section>
 
