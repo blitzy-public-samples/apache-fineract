@@ -18,6 +18,10 @@
  */
 package org.apache.fineract.portfolio.common.domain;
 
+import java.util.Arrays;
+import java.util.List;
+import org.apache.fineract.infrastructure.core.data.EnumOptionData;
+
 /**
  * Selectable day-count convention governing accrued-interest computation for a loan product. Persisted elsewhere as a
  * nullable Integer; {@code null} preserves the existing accrual behavior.
@@ -54,5 +58,14 @@ public enum DayCountConvention {
             case 3 -> THIRTY_360_US;
             default -> throw new IllegalArgumentException("Invalid DayCountConvention value: " + value);
         };
+    }
+
+    /**
+     * Exposes the selectable conventions as a list of {@link EnumOptionData} for additive inclusion on the loan-product
+     * template/response (mirrors the {@code getValuesAsEnumOptionDataList()} idiom used by other loan-product enums).
+     */
+    public static List<EnumOptionData> getValuesAsEnumOptionDataList() {
+        return Arrays.stream(values())
+                .map(convention -> new EnumOptionData(convention.value.longValue(), convention.code, convention.name())).toList();
     }
 }

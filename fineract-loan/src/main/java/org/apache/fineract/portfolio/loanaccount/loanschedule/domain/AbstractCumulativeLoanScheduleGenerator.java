@@ -2872,43 +2872,44 @@ public abstract class AbstractCumulativeLoanScheduleGenerator implements LoanSch
         // [Day-Count Convention feature]
         if (convention != null) {
             // [Day-Count Convention feature]
-            long computationStartNanos = System.nanoTime();
+            BigDecimal annualNominalInterestRate = loan.getLoanProductRelatedDetail().getAnnualNominalInterestRate();
             // [Day-Count Convention feature]
-            DayCountConventionCalculator dayCountCalculator = DayCountConventionCalculatorFactory.forConvention(convention);
+            BigDecimal outstandingPrincipal = loan.getSummary() == null ? null : loan.getSummary().getTotalPrincipalOutstanding();
             // [Day-Count Convention feature]
-            BigDecimal fullPeriodFraction = dayCountCalculator.dayCountFraction(startDate, dueDate);
-            // [Day-Count Convention feature]
-            if (fullPeriodFraction.signum() == 0) {
+            if (annualNominalInterestRate != null && outstandingPrincipal != null) {
                 // [Day-Count Convention feature]
-                return zero;
-            }
-            // [Day-Count Convention feature]
-            MathContext mc = MoneyHelper.getMathContext();
-            // [Day-Count Convention feature]
-            BigDecimal partialPeriodFraction = dayCountCalculator.dayCountFraction(startDate, targetDate);
-            // [Day-Count Convention feature]
-            interestPortion = interest.multiply(partialPeriodFraction, mc).divide(fullPeriodFraction, mc);
-            // [Day-Count Convention feature]
-            Money accruedInterest = Money.of(currency, interestPortion);
-            // [Day-Count Convention feature]
-            String conventionTag = convention.name().toLowerCase(Locale.ROOT);
-            // [Day-Count Convention feature]
-            Metrics.globalRegistry.counter(ACCRUAL_DAYCOUNT_COMPUTATIONS_METRIC_NAME, ACCRUAL_DAYCOUNT_CONVENTION_TAG, conventionTag)
-                    .increment();
-            // [Day-Count Convention feature]
-            Metrics.globalRegistry.timer(ACCRUAL_DAYCOUNT_DURATION_METRIC_NAME, ACCRUAL_DAYCOUNT_CONVENTION_TAG, conventionTag)
-                    .record(System.nanoTime() - computationStartNanos, TimeUnit.NANOSECONDS);
-            // [Day-Count Convention feature]
-            if (log.isDebugEnabled()) {
+                long computationStartNanos = System.nanoTime();
                 // [Day-Count Convention feature]
-                log.debug(
-                        "Interest-accrual day-count convention computation: loanId={}, convention={}, periodStart={}, periodEnd={}, targetDate={}, fullPeriodDays={}, partialPeriodDays={}, fullPeriodFraction={}, partialPeriodFraction={}, periodInterest={}, accruedInterest={}",
-                        loan.getId(), conventionTag, startDate, dueDate, targetDate, dayCountCalculator.dayCount(startDate, dueDate),
-                        dayCountCalculator.dayCount(startDate, targetDate), fullPeriodFraction, partialPeriodFraction, interest,
-                        accruedInterest.getAmount());
+                DayCountConventionCalculator dayCountCalculator = DayCountConventionCalculatorFactory.forConvention(convention);
+                // [Day-Count Convention feature]
+                MathContext mc = MoneyHelper.getMathContext();
+                // [Day-Count Convention feature]
+                BigDecimal partialPeriodFraction = dayCountCalculator.dayCountFraction(startDate, targetDate);
+                // [Day-Count Convention feature]
+                BigDecimal periodRate = annualNominalInterestRate.divide(BigDecimal.valueOf(100), mc);
+                // [Day-Count Convention feature]
+                interestPortion = outstandingPrincipal.multiply(periodRate, mc).multiply(partialPeriodFraction, mc);
+                // [Day-Count Convention feature]
+                Money accruedInterest = Money.of(currency, interestPortion);
+                // [Day-Count Convention feature]
+                String conventionTag = convention.name().toLowerCase(Locale.ROOT);
+                // [Day-Count Convention feature]
+                Metrics.globalRegistry.counter(ACCRUAL_DAYCOUNT_COMPUTATIONS_METRIC_NAME, ACCRUAL_DAYCOUNT_CONVENTION_TAG, conventionTag)
+                        .increment();
+                // [Day-Count Convention feature]
+                Metrics.globalRegistry.timer(ACCRUAL_DAYCOUNT_DURATION_METRIC_NAME, ACCRUAL_DAYCOUNT_CONVENTION_TAG, conventionTag)
+                        .record(System.nanoTime() - computationStartNanos, TimeUnit.NANOSECONDS);
+                // [Day-Count Convention feature]
+                if (log.isDebugEnabled()) {
+                    // [Day-Count Convention feature]
+                    log.debug(
+                            "Interest-accrual day-count convention computation: loanId={}, convention={}, periodStart={}, periodEnd={}, targetDate={}, partialPeriodDays={}, partialPeriodFraction={}, outstandingPrincipal={}, annualNominalInterestRate={}, accruedInterest={}",
+                            loan.getId(), conventionTag, startDate, dueDate, targetDate, dayCountCalculator.dayCount(startDate, targetDate),
+                            partialPeriodFraction, outstandingPrincipal, annualNominalInterestRate, accruedInterest.getAmount());
+                }
+                // [Day-Count Convention feature]
+                return accruedInterest;
             }
-            // [Day-Count Convention feature]
-            return accruedInterest;
         }
         int totalNumberOfDays = DateUtils.getExactDifferenceInDays(startDate, dueDate);
         int daysToBeAccrued = DateUtils.getExactDifferenceInDays(startDate, targetDate);

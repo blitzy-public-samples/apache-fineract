@@ -145,6 +145,9 @@ public class LoanProductData implements Serializable {
     // [Day-Count Convention feature]
     @Setter
     private Integer accrualDayCountConvention;
+    // [Day-Count Convention feature]
+    @Setter
+    private List<EnumOptionData> accrualDayCountConventionOptions;
     private final boolean isInterestRecalculationEnabled;
     private final LoanProductInterestRecalculationData interestRecalculationData;
     private final Integer minimumDaysBetweenDisbursalAndFirstRepayment;
