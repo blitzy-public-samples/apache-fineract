@@ -474,8 +474,8 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "sum by(type) (rate({compose_service=~\"fineract-.*\"} | pattern `<date> <time> <_>=<trace_id> <_>=<span_id> <_>=<trace_flags> <type> <_> --- <msg>` | type != \"\" |~ \"(?i)day.?count\" |= \"$log_keyword\" [1m]))",
-          "legendFormat": "{{type}}",
+          "expr": "sum by(level) (rate({compose_service=~\"fineract.*\"} | regexp `^\\S+ \\S+\\s+(?P<level>[A-Z]+) ` | level != \"\" |~ \"(?i)day.?count\" |= \"$log_keyword\" [1m]))",
+          "legendFormat": "{{level}}",
           "queryType": "range",
           "refId": "A"
         }
@@ -513,7 +513,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{compose_service=~\"fineract-.*\"} | pattern `<date> <time> <_>=<trace_id> <_>=<span_id> <_>=<trace_flags> <type> <_> --- <msg>` | line_format \"{{.compose_service}}\\t{{.type}}\\ttrace_id={{.trace_id}}\\t{{.msg}}\" |~ \"(?i)day.?count\" |= \"$log_keyword\"",
+          "expr": "{compose_service=~\"fineract.*\"} | regexp `^\\S+ \\S+\\s+(?P<level>[A-Z]+)\\s+\\S+\\s+(?:\\[(?P<correlationId>[^\\]]*)\\]\\s+)?\\[[^\\]]*\\]\\s+---\\s+.*? : (?P<msg>.*)$` | line_format \"{{.compose_service}}\\t{{.level}}\\tcorrelationId={{.correlationId}}\\t{{.msg}}\" |~ \"(?i)day.?count\" |= \"$log_keyword\"",
           "queryType": "range",
           "refId": "A"
         }
