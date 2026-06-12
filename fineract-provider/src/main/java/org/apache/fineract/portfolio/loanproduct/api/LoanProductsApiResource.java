@@ -75,6 +75,7 @@ import org.apache.fineract.organisation.monetary.data.CurrencyData;
 import org.apache.fineract.organisation.monetary.service.CurrencyReadPlatformService;
 import org.apache.fineract.portfolio.charge.data.ChargeData;
 import org.apache.fineract.portfolio.charge.service.ChargeReadPlatformService;
+import org.apache.fineract.portfolio.common.domain.DayCountConvention;
 import org.apache.fineract.portfolio.common.domain.DaysInYearCustomStrategyType;
 import org.apache.fineract.portfolio.common.service.DropdownReadPlatformService;
 import org.apache.fineract.portfolio.delinquency.data.DelinquencyBucketData;
@@ -483,20 +484,25 @@ public class LoanProductsApiResource {
         final List<CodeValueData> buydownFeeClassificationOptions = codeValueReadPlatformService
                 .retrieveCodeValuesByCode(LoanTransactionApiConstants.BUY_DOWN_FEE_CLASSIFICATION_CODE);
 
-        return new LoanProductData(productData, chargeOptions, penaltyOptions, paymentTypeOptions, currencyOptions, amortizationTypeOptions,
-                interestTypeOptions, interestCalculationPeriodTypeOptions, repaymentFrequencyTypeOptions, interestRateFrequencyTypeOptions,
-                fundOptions, transactionProcessingStrategyOptions, rateOptions, accountOptions, accountingRuleTypeOptions,
-                loanCycleValueConditionTypeOptions, daysInMonthTypeOptions, daysInYearTypeOptions,
-                interestRecalculationCompoundingTypeOptions, rescheduleStrategyTypeOptions, interestRecalculationFrequencyTypeOptions,
-                preCloseInterestCalculationStrategyOptions, floatingRateOptions, interestRecalculationNthDayTypeOptions,
-                interestRecalculationDayOfWeekTypeOptions, isRatesEnabled, delinquencyBucketOptions, repaymentStartDateTypeOptions,
-                advancedPaymentAllocationTransactionTypes, advancedPaymentAllocationFutureInstallmentAllocationRules,
-                advancedPaymentAllocationTypes, LoanScheduleType.getValuesAsEnumOptionDataList(),
-                LoanScheduleProcessingType.getValuesAsEnumOptionDataList(), creditAllocationTransactionTypes,
-                creditAllocationAllocationTypes, supportedInterestRefundTypesOptions, chargeOffBehaviourOptions, chargeOffReasonOptions,
-                daysInYearCustomStrategyOptions, capitalizedIncomeCalculationTypeOptions, capitalizedIncomeStrategyOptions,
-                capitalizedIncomeTypeOptions, buyDownFeeCalculationTypeOptions, buyDownFeeStrategyOptions, buyDownFeeIncomeTypeOptions,
-                writeOffReasonOptions, capitalizedIncomeClassificationOptions, buydownFeeClassificationOptions);
+        final LoanProductData templateData = new LoanProductData(productData, chargeOptions, penaltyOptions, paymentTypeOptions,
+                currencyOptions, amortizationTypeOptions, interestTypeOptions, interestCalculationPeriodTypeOptions,
+                repaymentFrequencyTypeOptions, interestRateFrequencyTypeOptions, fundOptions, transactionProcessingStrategyOptions,
+                rateOptions, accountOptions, accountingRuleTypeOptions, loanCycleValueConditionTypeOptions, daysInMonthTypeOptions,
+                daysInYearTypeOptions, interestRecalculationCompoundingTypeOptions, rescheduleStrategyTypeOptions,
+                interestRecalculationFrequencyTypeOptions, preCloseInterestCalculationStrategyOptions, floatingRateOptions,
+                interestRecalculationNthDayTypeOptions, interestRecalculationDayOfWeekTypeOptions, isRatesEnabled, delinquencyBucketOptions,
+                repaymentStartDateTypeOptions, advancedPaymentAllocationTransactionTypes,
+                advancedPaymentAllocationFutureInstallmentAllocationRules, advancedPaymentAllocationTypes,
+                LoanScheduleType.getValuesAsEnumOptionDataList(), LoanScheduleProcessingType.getValuesAsEnumOptionDataList(),
+                creditAllocationTransactionTypes, creditAllocationAllocationTypes, supportedInterestRefundTypesOptions,
+                chargeOffBehaviourOptions, chargeOffReasonOptions, daysInYearCustomStrategyOptions, capitalizedIncomeCalculationTypeOptions,
+                capitalizedIncomeStrategyOptions, capitalizedIncomeTypeOptions, buyDownFeeCalculationTypeOptions, buyDownFeeStrategyOptions,
+                buyDownFeeIncomeTypeOptions, writeOffReasonOptions, capitalizedIncomeClassificationOptions,
+                buydownFeeClassificationOptions);
+        // [Day-Count Convention feature]
+        templateData.setAccrualDayCountConventionOptions(DayCountConvention.getValuesAsEnumOptionDataList());
+        // [Day-Count Convention feature]
+        return templateData;
     }
 
 }

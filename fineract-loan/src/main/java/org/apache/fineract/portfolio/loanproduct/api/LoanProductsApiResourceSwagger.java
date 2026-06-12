@@ -156,6 +156,9 @@ public final class LoanProductsApiResourceSwagger {
         public Integer daysInMonthType;
         @Schema(example = "1")
         public Integer daysInYearType;
+        // [Day-Count Convention feature]
+        @Schema(example = "1")
+        public Integer accrualDayCountConvention;
         @Schema(example = "FULL_LEAP_YEAR")
         public String daysInYearCustomStrategy;
         @Schema(example = "true")
@@ -695,6 +698,9 @@ public final class LoanProductsApiResourceSwagger {
         public GetLoanProductsDaysInMonthType daysInMonthType;
         public GetLoanProductsDaysInYearType daysInYearType;
         public GetLoanProductsDaysInYearCustomStrategy daysInYearCustomStrategy;
+        // [Day-Count Convention feature]
+        @Schema(example = "1")
+        public Integer accrualDayCountConvention;
         @Schema(example = "true")
         public Boolean isInterestRecalculationEnabled;
         public GetLoanProductsInterestRecalculationData interestRecalculationData;
@@ -1133,6 +1139,9 @@ public final class LoanProductsApiResourceSwagger {
         public GetLoanProductsDaysInMonthType daysInMonthType;
         public GetLoanProductsDaysInYearType daysInYearType;
         public StringEnumOptionData daysInYearCustomStrategy;
+        // [Day-Count Convention feature]
+        @Schema(example = "1")
+        public Integer accrualDayCountConvention;
         @Schema(example = "false")
         public Boolean isInterestRecalculationEnabled;
         public GetLoanProductsInterestRecalculationTemplateData interestRecalculationData;
@@ -1152,6 +1161,8 @@ public final class LoanProductsApiResourceSwagger {
         public Set<StringEnumOptionData> daysInMonthTypeOptions;
         public Set<GetLoanProductsInterestTemplateType> daysInYearTypeOptions;
         public Set<StringEnumOptionData> daysInYearTypeCustomStrategyOptions;
+        // [Day-Count Convention feature]
+        public List<EnumOptionData> accrualDayCountConventionOptions;
         public Set<GetLoanProductsResponse.GetLoanProductsInterestRecalculationData.GetLoanProductsInterestRecalculationCompoundingType> interestRecalculationCompoundingTypeOptions;
         public Set<GetLoanProductsResponse.GetLoanProductsInterestRecalculationData.GetLoanProductsRescheduleStrategyType> rescheduleStrategyTypeOptions;
         public Set<GetLoanProductsResponse.GetLoanProductsInterestRecalculationData.GetLoanProductsInterestRecalculationCompoundingFrequencyType> interestRecalculationFrequencyTypeOptions;
@@ -1472,6 +1483,9 @@ public final class LoanProductsApiResourceSwagger {
         public GetLoanProductsDaysInMonthType daysInMonthType;
         public GetLoanProductsDaysInYearType daysInYearType;
         public StringEnumOptionData daysInYearCustomStrategy;
+        // [Day-Count Convention feature]
+        @Schema(example = "1")
+        public Integer accrualDayCountConvention;
         @Schema(example = "false")
         public Boolean canUseForTopup;
         public GetLoanAccountingMappings accountingMappings;
@@ -1661,6 +1675,9 @@ public final class LoanProductsApiResourceSwagger {
         public Long daysInYearType;
         @Schema(example = "FULL_LEAP_YEAR")
         public String daysInYearCustomStrategy;
+        // [Day-Count Convention feature]
+        @Schema(example = "1")
+        public Integer accrualDayCountConvention;
         @Schema(example = "true")
         public Boolean allowPartialPeriodInterestCalculation;
         @Schema(example = "179")

@@ -334,11 +334,15 @@ public class LoanProductAssembler {
         final boolean merchantBuyDownFee = command
                 .booleanPrimitiveValueOfParameterNamed(LoanProductConstants.MERCHANT_BUY_DOWN_FEE_PARAM_NAME);
 
-        return new LoanProduct(fund, loanTransactionProcessingStrategy, loanProductPaymentAllocationRules, loanProductCreditAllocationRules,
-                name, shortName, description, currency, principal, minPrincipal, maxPrincipal, interestRatePerPeriod,
-                minInterestRatePerPeriod, maxInterestRatePerPeriod, interestFrequencyType, annualInterestRate, interestMethod,
-                interestCalculationPeriodMethod, allowPartialPeriodInterestCalculation, repaymentEvery, repaymentFrequencyType,
-                numberOfRepayments, minNumberOfRepayments, maxNumberOfRepayments, graceOnPrincipalPayment,
+        // [Day-Count Convention feature]
+        final Integer accrualDayCountConvention = command
+                .integerValueOfParameterNamed(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME);
+
+        final LoanProduct loanProduct = new LoanProduct(fund, loanTransactionProcessingStrategy, loanProductPaymentAllocationRules,
+                loanProductCreditAllocationRules, name, shortName, description, currency, principal, minPrincipal, maxPrincipal,
+                interestRatePerPeriod, minInterestRatePerPeriod, maxInterestRatePerPeriod, interestFrequencyType, annualInterestRate,
+                interestMethod, interestCalculationPeriodMethod, allowPartialPeriodInterestCalculation, repaymentEvery,
+                repaymentFrequencyType, numberOfRepayments, minNumberOfRepayments, maxNumberOfRepayments, graceOnPrincipalPayment,
                 recurringMoratoriumOnPrincipalPeriods, graceOnInterestPayment, graceOnInterestCharged, amortizationMethod,
                 inArrearsTolerance, productCharges, accountingRuleType, includeInBorrowerCycle, startDate, closeDate, externalId,
                 useBorrowerCycle, loanProductBorrowerCycleVariations, multiDisburseLoan, maxTrancheCount, outstandingLoanBalance,
@@ -357,6 +361,10 @@ public class LoanProductAssembler {
                 daysInYearCustomStrategy, enableIncomeCapitalization, capitalizedIncomeCalculationType, capitalizedIncomeStrategy,
                 capitalizedIncomeType, enableBuyDownFee, buyDownFeeCalculationType, buyDownFeeStrategy, buyDownFeeIncomeType,
                 merchantBuyDownFee, allowFullTermForTranche);
+
+        // [Day-Count Convention feature]
+        loanProduct.getLoanProductRelatedDetail().setAccrualDayCountConvention(accrualDayCountConvention);
+        return loanProduct;
 
     }
 

@@ -33,6 +33,11 @@ dependencies {
     testImplementation(project(':fineract-avro-schemas'))
     testImplementation(project(':fineract-client-feign'))
     testImplementation(project(':fineract-e2e-tests-core').sourceSets.test.output)
+    // [Day-Count Convention feature] Put :fineract-core on the Cucumber runner's runtime classpath so the
+    // CSV-driven accrual step definition can load DayCountConvention and the day-count calculators. The
+    // e2e-tests-core dependency above is consumed only as a compiled sourceSets.test.output file collection,
+    // which carries no transitive dependencies, so :fineract-core would otherwise be absent at run time.
+    testImplementation(project(':fineract-core'))
 
     testImplementation 'org.springframework:spring-context'
     implementation 'org.springframework:spring-test'
@@ -95,7 +100,11 @@ cucumber {
 
     tags = 'not @Skip'
     if (project.hasProperty("cucumber.tags")) {
-        tags = [project.getProperty("cucumber.tags")]
+        // [Day-Count Convention feature] Pass the tag expression as a plain String. The cucumber-runner
+        // plugin's 'tags' property is a String; wrapping it in a List coerces to "[@Tag]" (with literal
+        // brackets) and matches no scenarios, so e.g. -Pcucumber.tags="@InterestAccrualDayCountFeature"
+        // would select 0 scenarios instead of the feature's 18 rows.
+        tags = project.getProperty("cucumber.tags")
     }
 
     if (project.hasProperty("cucumber.name")) {
@@ -107,6 +116,17 @@ cucumber {
 
 allure {
     version = '2.17.3'
+}
+
+// [Day-Count Convention feature] Make Allure report generation idempotent across repeated
+// `./gradlew cucumber` runs. io.qameta.allure 3.2.0's AllureReport task fails when its target
+// report directory already exists (the underlying `allure generate` needs `--clean`). Enabling
+// clean removes only the generated HTML report directory before regenerating; it does NOT delete
+// allure-results, alter or skip any scenario, or touch the committed acceptance CSV, so acceptance
+// test integrity is fully preserved. Clean-workspace / first-run CI behaviour is unchanged because
+// clean is a no-op when the report directory does not yet exist.
+tasks.named('allureReport').configure {
+    clean.set(true)
 }
 
 test {

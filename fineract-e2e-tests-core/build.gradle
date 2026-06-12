@@ -59,6 +59,8 @@ tasks.named('compileTestJava') {
 dependencies {
     testImplementation(project(':fineract-avro-schemas'))
     testImplementation(project(':fineract-client-feign'))
+    // [Day-Count Convention feature]
+    testImplementation(project(':fineract-core'))
 
     testImplementation 'org.springframework:spring-context'
     implementation 'org.springframework:spring-test'

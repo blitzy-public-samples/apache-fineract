@@ -272,6 +272,15 @@ public class LoanProductRelatedDetailUpdateUtil {
             loanRepaymentScheduleDetail.setDaysInYearType(newValue);
         }
 
+        // [Day-Count Convention feature]
+        if (command.isChangeInIntegerParameterNamed(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME,
+                loanRepaymentScheduleDetail.getAccrualDayCountConvention())) {
+            final Integer newValue = command.integerValueOfParameterNamed(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME);
+            actualChanges.put(LoanProductConstants.ACCRUAL_DAY_COUNT_CONVENTION_PARAMETER_NAME, newValue);
+            actualChanges.put("locale", localeAsInput);
+            loanRepaymentScheduleDetail.setAccrualDayCountConvention(newValue);
+        }
+
         if (command.parameterExists(LoanProductConstants.DAYS_IN_YEAR_CUSTOM_STRATEGY_TYPE_PARAMETER_NAME)) {
             final DaysInYearCustomStrategyType newValue = DaysInYearCustomStrategyType
                     .valueOf(command.stringValueOfParameterNamed(LoanProductConstants.DAYS_IN_YEAR_CUSTOM_STRATEGY_TYPE_PARAMETER_NAME));

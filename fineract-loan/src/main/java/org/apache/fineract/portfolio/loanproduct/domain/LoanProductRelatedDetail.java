@@ -133,6 +133,10 @@ public class LoanProductRelatedDetail {
     @Column(name = "days_in_year_enum", nullable = false)
     private Integer daysInYearType;
 
+    // [Day-Count Convention feature]
+    @Column(name = "accrual_day_count_convention")
+    private Integer accrualDayCountConvention;
+
     @Column(name = "interest_recalculation_enabled")
     private boolean isInterestRecalculationEnabled;
 
